@@ -24,22 +24,23 @@ Timer2_msec timer2;
 
 int old_counter = 0;
 double deg = 0.0;
-double interval = 20.0;
+volatile double interval = 20.0;
 double speed = 0.0;
-double max_speed = 137.0; // need to find this value RPM
+double max_speed = 140.0; // need to find this value RPM
 bool check = true;
 bool GO = false;
-double time_constant = 60.0; // need to find this value ms
+double time_constant = 40.0; // need to find this value ms
 double update_rate = 10.0/time_constant;
 
-double timer1_count = 0;
-float duty_cycle = 0.0;
+double timer1_count = 0.0;
+volatile int timer1_int_count = 0;
+volatile float duty_cycle = 0.0;
 
-double control_rate = 10.0/(60.0/1000.0);
-double set_speed = 100.0;
-double error = 0.0;
+volatile double control_rate = 10.0/(time_constant/1000.0);
+volatile double set_speed = 100.0;
+volatile double error = 0.0;
 double P = 1.0;
-double control_signal = 0.0;
+volatile double control_signal = 0.0;
 
 int main()
 {
@@ -76,7 +77,18 @@ int main()
 
 	while(true)
 	{	
-
+		// if timer1_int_count % 100 == 0
+		// then print out the speed
+		if(timer1_int_count % 1000 == 0)
+		{
+			Serial.print("speed: ");
+			Serial.println(speed);
+			Serial.print("control signal: ");
+			Serial.println(control_signal);
+			Serial.print("duty cycle: ");
+			Serial.println(duty_cycle);
+			Serial.println();
+		}
 		// Part 2 measure maximum motor speed
 		/* if (speed >= max_speed)
 		{
@@ -119,7 +131,9 @@ ISR(TIMER0_COMPA_vect)
 	control_signal = controller.update(set_speed, speed);
 	//Serial.println(controller.update(set_speed, speed));
 	//Serial.println(control_signal/set_speed-0.01);
-	timer2.set(control_signal/set_speed-0.01);
+
+	timer2.set(control_signal/set_speed - 0.01);
+
 	
 }
 
@@ -133,7 +147,7 @@ ISR(TIMER1_COMPA_vect)
 	{
 		timer1_count += interval;
 	} */
-	
+	timer1_int_count += interval;
 	speed = (((enc.get_counter()/interval)*1000.0)/1400.0)*60.0;
 	// 
 	enc.reset_counter();
@@ -143,7 +157,7 @@ ISR(TIMER1_COMPA_vect)
 			Serial.println(timer1_count);
 			check = false;
 		} */
-	Serial.println(speed);
+	//Serial.println(speed);
 	
 }
 
