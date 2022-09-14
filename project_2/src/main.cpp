@@ -65,9 +65,9 @@ int main()
 
 	/////////// for timer /////////////
 	// find out what frequency is needed for PWM
-	timer0.init((1.0/control_rate)*1000000.0); //MICROSEC
-	timer1.init(interval);
-	timer2.init(15000, duty_cycle); //MICROSEC
+	timer0.init((1.0/control_rate)*1000000.0); //MICROSEC (max 16384 microsec)
+	timer1.init(interval); //MILLISEC (max 4194.304 millisec)
+	timer2.init(15000, duty_cycle); //MICROSEC (max 16384 microsec)
 	
 	//timer1.init(interval,duty_cycle);
 	
@@ -77,7 +77,7 @@ int main()
 
 	while(true)
 	{	
-		// if timer1_int_count % 100 == 0
+		// if timer1_int_count % 1000 == 0
 		// then print out the speed
 		if(timer1_int_count % 1000 == 0)
 		{
@@ -99,11 +99,12 @@ int main()
 		// Part 2 measure time constant
 		// measure time it takes to reach 63% of max speed
 		// the max speed needs to  be measured first !!!!
-		//Serial.println(speed);	
-		//Serial.println(speed >= 0.63*max_speed);	
-		// print time_counter when the speed reaches 63% of max speed
-		
-		
+		/* if (speed >= 0.63*max_speed && check)
+		{
+			check = false;
+			Serial.println("Time constant: ");
+			Serial.println(timer1_count);
+		} */
 		
 		// Part 3 P control
 		// control output should be updated at a mininum rate

@@ -14,7 +14,7 @@ void Timer0_msec::init(int period_msec)
     TCCR0B = 0; //
     TCNT0 = 0; // initialize counter value to 0
     OCR0A = static_cast<uint8_t>((16000000 / 1024 - 1)*period_msec/1000000.0); // assign target count to compare register A (must be less than 65536)
-    TCCR0B |= (1 << WGM02); // clear the timer on compare match A
+    TCCR0A |= (1 << WGM01); // clear the timer on compare match A
     TIMSK0 |= (1 << OCIE0A); // set interrupt on compare match A
     TCCR0B |= (1 << CS02) | (1 << CS00); // set prescaler to 1024 and start the timer
 }
@@ -27,7 +27,7 @@ void Timer0_msec::init(int period_msec, float duty_cycle)
     TCNT0 = 0; // initialize counter value to 0
     OCR0A = static_cast<uint8_t>((16000000 / 1024 - 1)*period_msec/1000000.0); // assign target count to compare register A (must be less than 65536)
     OCR0B = static_cast<uint8_t>(OCR0A * duty_cycle); // assign target count to compare register B (should not exceed value of OCR1A)
-    TCCR0B |= (1 << WGM02); // clear the timer on compare match A
+    TCCR0A |= (1 << WGM01); // clear the timer on compare match A
     TIMSK0 |= (1 << OCIE0A); // set interrupt on compare match A
     TIMSK0 |= (1 << OCIE0B); // set interrupt on compare match B
     TCCR0B |= (1 << CS02) | (1 << CS00); // set prescaler to 1024 and start the timer
