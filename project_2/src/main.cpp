@@ -81,12 +81,15 @@ int main()
 		// then print out the speed
 		if(timer1_int_count % 1000 == 0)
 		{
-			Serial.print("speed: ");
-			Serial.println(speed);
-			Serial.print("control signal: ");
-			Serial.println(control_signal);
+			Serial.print("Reference value: ");
+			Serial.print(set_speed);
+			Serial.println(" RPM");
+			Serial.print("Speed: ");
+			Serial.print(speed);
+			Serial.println(" RPM");
 			Serial.print("duty cycle: ");
-			Serial.println(duty_cycle);
+			Serial.print(duty_cycle);
+			Serial.println();
 			Serial.println();
 		}
 		// Part 2 measure maximum motor speed
@@ -130,10 +133,8 @@ ISR(TIMER0_COMPA_vect)
 	// set speed to x pulses per second
 	// calculate error
 	control_signal = controller.update(set_speed, speed);
-	//Serial.println(controller.update(set_speed, speed));
-	//Serial.println(control_signal/set_speed-0.01);
-
-	timer2.set(control_signal/set_speed - 0.01);
+	duty_cycle = control_signal/set_speed-0.01;
+	timer2.set(duty_cycle);
 }
 
 ISR(TIMER1_COMPA_vect)
