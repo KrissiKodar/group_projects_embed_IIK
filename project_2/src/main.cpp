@@ -133,8 +133,6 @@ ISR(TIMER0_COMPA_vect)
 	//Serial.println(control_signal/set_speed-0.01);
 
 	timer2.set(control_signal/set_speed - 0.01);
-
-	
 }
 
 ISR(TIMER1_COMPA_vect)
