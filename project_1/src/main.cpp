@@ -18,6 +18,8 @@ int old_counter = 0;
 double deg = 0.0;
 double interval = 100.0;
 
+// TEST!!!!
+
 int main()
 {
 	///////// for serial monitor /////////
@@ -28,7 +30,7 @@ int main()
 	encoder_input1.init();
 	encoder_input2.init();
 	enc.init(encoder_input1.is_hi());
-	
+
 	// use if encoder is connected to interrupt pins
 	enc.init_interrupt();
 	sei(); // enable interrupts
