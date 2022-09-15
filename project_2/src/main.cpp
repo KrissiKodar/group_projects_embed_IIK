@@ -25,8 +25,8 @@ Timer2_msec timer2;
 int old_counter = 0;
 double deg = 0.0;
 volatile double interval = 20.0;
-double speed = 0.0;
-double max_speed = 140.0; // need to find this value RPM
+volatile double speed = 0.0;
+volatile double max_speed = 140.0; // need to find this value RPM
 bool check = true;
 bool GO = false;
 double time_constant = 40.0; // need to find this value ms
@@ -36,10 +36,10 @@ double timer1_count = 0.0;
 volatile int timer1_int_count = 0;
 volatile float duty_cycle = 0.0;
 
-volatile double control_rate = 10.0/(time_constant/1000.0);
+volatile double control_rate = (10.0/(time_constant/1000.0))*2.0;
 volatile double set_speed = 100.0;
 volatile double error = 0.0;
-double P = 1.0;
+volatile double P = 1.0;
 volatile double control_signal = 0.0;
 
 int main()
@@ -67,7 +67,7 @@ int main()
 	// find out what frequency is needed for PWM
 	timer0.init((1.0/control_rate)*1000000.0); //MICROSEC (max 16384 microsec)
 	timer1.init(interval); //MILLISEC (max 4194.304 millisec)
-	timer2.init(15000, duty_cycle); //MICROSEC (max 16384 microsec)
+	timer2.init(100, duty_cycle); //MICROSEC (max 16384 microsec)
 	
 	//timer1.init(interval,duty_cycle);
 	
@@ -133,7 +133,15 @@ ISR(TIMER0_COMPA_vect)
 	// set speed to x pulses per second
 	// calculate error
 	control_signal = controller.update(set_speed, speed);
-	duty_cycle = control_signal/set_speed-0.01;
+	duty_cycle = control_signal/max_speed;
+	if (duty_cycle >= 1.0)
+	{
+		duty_cycle = 0.99;
+	}
+	else if (duty_cycle <= 0.0)
+	{
+		duty_cycle = 0.0;
+	}
 	timer2.set(duty_cycle);
 }
 
