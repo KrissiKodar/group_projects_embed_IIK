@@ -17,7 +17,9 @@ Digital_in encoder_input2(3);
 P_controller controller;
 encoder enc;
 
-// we most likely need a second timer for the
+// timer0 updates controller
+// timer1 calculates speed
+// timer2 generates PWM
 Timer0_msec timer0;
 Timer_msec timer1;
 Timer2_msec timer2;
