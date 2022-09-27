@@ -16,6 +16,8 @@ extern Controller controller;
 
 extern volatile int timer1_int_count;
 extern volatile int led_freq;
+extern double reference_speed;
+extern double P;
 
 void operational_state::on_do()
 {
@@ -27,6 +29,7 @@ void operational_state::on_entry()
   // ligh continuously on
   led_freq = constants::interval + 1.0;
   led.set_hi();
+  Controller.init(P);
 }
 
 void operational_state::on_exit()

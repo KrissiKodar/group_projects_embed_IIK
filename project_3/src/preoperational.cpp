@@ -15,6 +15,8 @@ extern Controller controller;
 
 extern volatile int timer1_int_count;
 extern volatile int led_freq;
+extern double reference_speed;
+extern double P;
 
 void preoperational_state::on_do()
 {
