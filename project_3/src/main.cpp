@@ -84,7 +84,7 @@ void loop()
 	// put your main code here, to run repeatedly:
 	int command = 0;
 
-	delay(100);
+	//delay(100);
 
 	context->do_work();
 

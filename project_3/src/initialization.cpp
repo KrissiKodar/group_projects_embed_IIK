@@ -3,10 +3,21 @@
 #include "operational.h"
 #include "preoperational.h"
 #include "initialization.h"
+#include "digital_out.h"
+#include "digital_in.h"
+#include "controller.h"
+
+extern Digital_out led;
+extern Digital_out in_1;
+extern Digital_out in_2;
+extern Digital_out PWM_pin;
+extern Controller controller;
+
+extern volatile int timer1_int_count;
 
 void initialization_state::on_do()
 {
-  // do nothing
+ // do nothing
 }
 
 void initialization_state::on_entry()
