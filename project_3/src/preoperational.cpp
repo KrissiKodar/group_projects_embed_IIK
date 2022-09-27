@@ -1,4 +1,4 @@
-#include "global_variables.h"
+#include "constants.h"
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -34,8 +34,6 @@ void preoperational_state::on_entry()
     reference_speed = Serial.parseFloat();
     Serial.print("Enter P value: ");
     P = Serial.parseFloat();
-    // initialize the controller
-    controller.init(P);
   }
   Serial.println("//////////////////////////////////// ");
 }
@@ -61,4 +59,10 @@ void preoperational_state::on_reset()
 {
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
+}
+
+void preoperational_state::on_stop()
+{
+  Serial.println("I received a stop command");
+  this->context_->transition_to(new stopped_state);
 }

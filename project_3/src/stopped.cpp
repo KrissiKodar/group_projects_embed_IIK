@@ -22,6 +22,7 @@ void stopped_state::on_do()
   if (timer1_int_count % 500 == 0)
   {
     led.toggle();
+    timer1_int_count = constants::interval;
   }
 }
 
@@ -51,4 +52,9 @@ void stopped_state::on_reset()
 {
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
+}
+
+void stopped_state::on_stop()
+{
+  // do nothing
 }

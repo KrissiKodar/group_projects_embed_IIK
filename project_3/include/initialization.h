@@ -19,5 +19,7 @@ public:
 	void on_set_preoperational() override;
 
 	void on_reset() override;
+
+	void on_stop() override;
 };
 #endif

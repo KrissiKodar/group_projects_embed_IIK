@@ -50,3 +50,7 @@ void initialization_state::on_reset()
 {
   // do nothing
 }
+void initialization_state::on_stop()
+{
+  //d o nothing
+}

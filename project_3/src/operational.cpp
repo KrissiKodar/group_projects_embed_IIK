@@ -1,3 +1,4 @@
+#include "constants.h"
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -47,6 +48,13 @@ void operational_state::on_set_preoperational()
 
 void operational_state::on_reset()
 {
+  controller.init(0);
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
+}
+
+void operational_state::on_stop()
+{
+  Serial.println("I received a stop command");
+  this->context_->transition_to(new stopped_state);
 }

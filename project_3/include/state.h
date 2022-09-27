@@ -34,6 +34,8 @@ public:
 
 	virtual void on_reset() = 0;
 
+	virtual void on_stop() = 0;
+
 	// ...
 };
 

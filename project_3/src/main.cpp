@@ -1,5 +1,5 @@
-#include "global_variables.h"
 #include <Arduino.h>
+#include "constants.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include "constants.h"
@@ -99,6 +99,9 @@ void loop()
 	context->command_set_preoperational();
 
 	if (command == 'r')
+	context->reset();
+
+	if (command == 's')
 	context->reset();
 }
 // interrupts at every every pulse
