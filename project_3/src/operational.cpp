@@ -14,16 +14,18 @@ extern Controller controller;
 
 
 extern volatile int timer1_int_count;
-
+extern volatile int led_freq;
 
 void operational_state::on_do()
 {
-  led.set_hi();
+
 }
 
 void operational_state::on_entry()
 {
-  Serial.println("light is green");
+  // ligh continuously on
+  led_freq = constants::interval + 1.0;
+  led.set_hi();
 }
 
 void operational_state::on_exit()

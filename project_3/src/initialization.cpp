@@ -14,6 +14,7 @@ extern Digital_out PWM_pin;
 extern Controller controller;
 
 extern volatile int timer1_int_count;
+extern volatile int led_freq;
 
 void initialization_state::on_do()
 {

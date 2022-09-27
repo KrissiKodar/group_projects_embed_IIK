@@ -28,7 +28,6 @@ Timer_msec timer1;
 Timer2_msec timer2;
 
 volatile double speed = 0.0;
-double timer1_count = 0.0;
 volatile int timer1_int_count = 0;
 volatile float duty_cycle = 0.0;
 
@@ -37,6 +36,8 @@ volatile double reference_speed = 140.0;
 volatile double error = 0.0;
 volatile double P = 1.4 / constants::max_speed;
 volatile double control_signal = 0.0;
+
+volatile int led_freq = 1;
 
 // for storing speed and duty cycle values for the plots
 //volatile double speed_array[200];
@@ -145,6 +146,13 @@ ISR(TIMER1_COMPA_vect)
 	speed = (((enc.get_counter() / constants::interval) * 1000.0) / 1400.0) * 60.0;
 	
 	enc.reset_counter();
+
+	// kveikja/slokkva led x sinni a sekundu (x Hz)
+	if ((timer1_int_count % ((1000/led_freq)) ) == 0)
+	{
+		led.toggle();
+		timer1_int_count = 0;
+	}
 
 	// puts speed and duty cycle values in arrays for plotting
 	/* speed_array[index] = speed;

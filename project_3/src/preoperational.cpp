@@ -14,14 +14,11 @@ extern Digital_out PWM_pin;
 extern Controller controller;
 
 extern volatile int timer1_int_count;
+extern volatile int led_freq;
 
 void preoperational_state::on_do()
 {
-  // kveikja/slokkva led 1 sinni a sekundu (1 Hz)
-  if (timer1_int_count % 1000 == 0)
-  {
-    led.toggle();
-  }
+  
 }
 
 void preoperational_state::on_entry()
@@ -30,6 +27,7 @@ void preoperational_state::on_entry()
   Serial.println("/////////// Configuration /////////// ");
   // read in input from serial
   // set the input as the value for the P controller
+  led_freq = 1; // Hz
   if (Serial.available() > 0)
   {
     Serial.print("Enter reference speed: ");
