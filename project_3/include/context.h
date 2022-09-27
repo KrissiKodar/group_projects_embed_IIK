@@ -21,6 +21,7 @@ public:
   void command_set_operational();
   void command_set_preoperational();
   void reset();
+  void command_stop();
 };
 
 #endif

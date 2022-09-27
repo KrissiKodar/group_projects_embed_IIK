@@ -14,6 +14,9 @@ extern Digital_out PWM_pin;
 extern Controller controller;
 
 extern volatile int timer1_int_count;
+extern volatile double reference_speed;
+extern volatile double P;
+extern volatile double speed;
 
 void initialization_state::on_do()
 {
@@ -48,4 +51,8 @@ void initialization_state::on_set_preoperational()
 void initialization_state::on_reset()
 {
   // do nothing
+}
+void initialization_state::on_stop()
+{
+  //d o nothing
 }

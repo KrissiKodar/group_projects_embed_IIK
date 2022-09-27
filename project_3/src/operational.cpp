@@ -1,3 +1,4 @@
+#include "constants.h"
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -14,16 +15,28 @@ extern Controller controller;
 
 
 extern volatile int timer1_int_count;
+extern volatile double reference_speed;
+extern volatile double P;
+extern volatile double speed;
 
 
 void operational_state::on_do()
 {
-  led.set_hi();
+  // every 1 second print the speed
+  if (timer1_int_count % 1000 == 0)
+  {
+    // print the speed along with the units, RPN
+    Serial.print(speed);
+    Serial.println(" RPM");
+    timer1_int_count = constants::interval;
+  }
 }
 
 void operational_state::on_entry()
 {
-  Serial.println("light is green");
+  led.set_hi();
+  // initialize the controller
+  controller.init(P);
 }
 
 void operational_state::on_exit()
@@ -45,6 +58,13 @@ void operational_state::on_set_preoperational()
 
 void operational_state::on_reset()
 {
+  controller.init(0);
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
+}
+
+void operational_state::on_stop()
+{
+  Serial.println("I received a stop command");
+  this->context_->transition_to(new stopped_state);
 }

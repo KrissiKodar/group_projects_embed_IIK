@@ -1,4 +1,4 @@
-#include "global_variables.h"
+#include "constants.h"
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -14,6 +14,9 @@ extern Digital_out PWM_pin;
 extern Controller controller;
 
 extern volatile int timer1_int_count;
+extern volatile double reference_speed;
+extern volatile double P;
+extern volatile double speed;
 
 void preoperational_state::on_do()
 {
@@ -21,6 +24,7 @@ void preoperational_state::on_do()
   if (timer1_int_count % 1000 == 0)
   {
     led.toggle();
+    timer1_int_count = constants::interval;
   }
 }
 
@@ -30,14 +34,12 @@ void preoperational_state::on_entry()
   Serial.println("/////////// Configuration /////////// ");
   // read in input from serial
   // set the input as the value for the P controller
-  if (Serial.available() > 0)
+  while (Serial.available() == 0)
   {
     Serial.print("Enter reference speed: ");
     reference_speed = Serial.parseFloat();
     Serial.print("Enter P value: ");
     P = Serial.parseFloat();
-    // initialize the controller
-    controller.init(P);
   }
   Serial.println("//////////////////////////////////// ");
 }
@@ -63,4 +65,10 @@ void preoperational_state::on_reset()
 {
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
+}
+
+void preoperational_state::on_stop()
+{
+  Serial.println("I received a stop command");
+  this->context_->transition_to(new stopped_state);
 }

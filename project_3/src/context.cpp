@@ -45,3 +45,8 @@ void Context::reset()
 {
   this->state_->on_reset();
 }
+
+void Context::command_stop()
+{
+  this->state_->on_stop();
+}
