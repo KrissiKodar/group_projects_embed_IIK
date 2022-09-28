@@ -15,20 +15,18 @@ extern Controller controller;
 
 extern volatile int timer1_int_count;
 extern volatile int led_freq;
+extern volatile bool cont;
 
 void stopped_state::on_do()
 {
-  // kveikja/slokkva led 2 sinni a sekundu (2 Hz)
-  if (timer1_int_count % 500 == 0)
-  {
-    led.toggle();
-    timer1_int_count = constants::interval;
-  }
 }
 
 void stopped_state::on_entry()
 {
+  controller.brake();
+  cont = false;
   led_freq = 2;
+  Serial.println("/////////// Motor is in stopped mode /////////// ");
 }
 
 void stopped_state::on_exit()

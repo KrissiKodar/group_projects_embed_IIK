@@ -15,21 +15,33 @@ extern Controller controller;
 
 
 extern volatile int timer1_int_count;
+extern volatile int timer1_int_count_2;
 extern volatile int led_freq;
+extern volatile bool cont;
 extern volatile double reference_speed;
 extern volatile double P;
+extern volatile double speed;
 
 void operational_state::on_do()
 {
-
+  if ((timer1_int_count_2 % 1000) == 0)
+	{
+		// print out the reference speed and the actual speed in RPM
+    Serial.print("Reference speed: ");
+    Serial.print(reference_speed);
+    Serial.print(" Actual speed: ");
+    Serial.println(speed);
+		timer1_int_count_2 = constants::interval;
+	} 
 }
 
 void operational_state::on_entry()
 {
   // ligh continuously on
-  led_freq = constants::interval + 1.0;
+  cont = true;
   led.set_hi();
   controller.init(P);
+  Serial.println("/////////// Motor is in operational mode /////////// ");
 }
 
 void operational_state::on_exit()
@@ -51,7 +63,6 @@ void operational_state::on_set_preoperational()
 
 void operational_state::on_reset()
 {
-  controller.init(0);
   Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
 }

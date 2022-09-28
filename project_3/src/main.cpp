@@ -29,6 +29,7 @@ Timer2_msec timer2;
 
 volatile double speed = 0.0;
 volatile int timer1_int_count = 0;
+volatile int timer1_int_count_2 = 0;
 volatile float duty_cycle = 0.0;
 
 
@@ -38,7 +39,7 @@ volatile double P = 1.4 / constants::max_speed;
 volatile double control_signal = 0.0;
 
 volatile int led_freq = 1;
-
+volatile bool cont = false;
 // for storing speed and duty cycle values for the plots
 //volatile double speed_array[200];
 //volatile double duty_cycle_array[200];
@@ -50,33 +51,23 @@ void setup()
 {
 	///////// for serial monitor /////////
 	Serial.begin(9600);
-
 	////////////// for led ///////////////
 	led.init();
-
-	/////////// for H-bridge /////////////
-	PWM_pin.init();
-	in_1.init();
-	in_2.init();
-	in_1.set_lo();
-	in_2.set_hi();
-
 	/////////// for encoder /////////////
 	encoder_input1.init();
 	encoder_input2.init();
 	enc.init(encoder_input1.is_hi());
 
+	/////////// for H-bridge /////////////
+	PWM_pin.init();
+	in_1.init();
+	in_2.init();
+
 	// use if encoder is connected to interrupt pins
 	enc.init_interrupt();
-
 	/////////// for timers /////////////
-	// find out what frequency is needed for PWM
-	// timer0.init((1.0/control_rate)*1000000.0); //MICROSEC (max 16384 microsec)
 	timer0.init(constants::control_rate);
 	timer1.init(constants::interval);		   // MILLISEC (max 4194.304 millisec)
-	timer2.init(1500, duty_cycle); // MICROSEC (max 16384 microsec)
-
-	
 	context = new Context(new initialization_state);
 }
 
@@ -102,7 +93,7 @@ void loop()
 	context->reset();
 
 	if (command == 's')
-	context->reset();
+	context->command_stop();
 }
 // interrupts at every every pulse
 ISR(INT0_vect)
@@ -144,6 +135,7 @@ ISR(TIMER1_COMPA_vect)
 
 	// counter used to print at equal time intervals
 	timer1_int_count += constants::interval;
+	timer1_int_count_2 += constants::interval;
 
 	// calculate the speed
 	speed = (((enc.get_counter() / constants::interval) * 1000.0) / 1400.0) * 60.0;
@@ -151,7 +143,7 @@ ISR(TIMER1_COMPA_vect)
 	enc.reset_counter();
 
 	// kveikja/slokkva led x sinni a sekundu (x Hz)
-	if ((timer1_int_count % ((1000/led_freq)) ) == 0)
+	if (((timer1_int_count % (1000/led_freq)) == 0) && (cont == false))
 	{
 		led.toggle();
 		timer1_int_count = 0;

@@ -15,6 +15,7 @@ extern Controller controller;
 
 extern volatile int timer1_int_count;
 extern volatile int led_freq;
+extern volatile bool cont;
 extern volatile double reference_speed;
 extern volatile double P;
 
@@ -29,13 +30,15 @@ void preoperational_state::on_entry()
   Serial.println("/////////// Configuration /////////// ");
   // read in input from serial
   // set the input as the value for the P controller
+  cont = false;
   led_freq = 1; // Hz
-  if (Serial.available() > 0)
+  while (Serial.available() == 0)
   {
-    Serial.print("Enter reference speed: ");
+    Serial.println("Enter reference speed: ");
     reference_speed = Serial.parseFloat();
-    Serial.print("Enter P value: ");
-    P = Serial.parseFloat();
+    // print new line
+    Serial.println("Enter P value: ");
+    P = Serial.parseFloat()/constants::max_speed;
   }
   Serial.println("//////////////////////////////////// ");
 }
