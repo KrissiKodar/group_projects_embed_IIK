@@ -1,38 +1,42 @@
 #include <avr/delay.h>
 #include <unity.h>
-
 #include "PI_controller.h"
 
-void test_integration(void)
+void test_simple_integration(void)
 {
     // 1 Setup
-    /* Fifo f;
-    f.put(1);
-    f.put(2);
-    f.get();
-    f.put(3);
-
-    // 2-3 Execute and validate
-    TEST_ASSERT_EQUAL(2, f.get());
-    TEST_ASSERT_EQUAL(3, f.get()); */
-
-    // 4 Cleanup
+    PI_Controller pi(1.0, 1.0, 1.0);
+    double ref = 10.0;
+    double actual = 0;
+    double control = 0;
+    // 2 - 3 Execute and validate
+    for (int i = 0; i < 3; i++)
+    {
+        control = pi.update(ref, actual);
+        _delay_ms(100);
+        actual = 0.01*control;
+    }
+    TEST_ASSERT_EQUAL_FLOAT(0.39208, actual);
+    // Cleanup
 }
 
 void test_anti_windup(void)
 
 {
     // 1 Setup
-    /* Fifo f;
-    f.put(1);
-    f.put(2);
-    f.get();
-    f.get();
-
-    // 2-3 Execute and validate
-    TEST_ASSERT_TRUE(f.is_empty()); */
-
-    // 4 Cleanup
+    PI_Controller pi(1.0, 1.0, 1.0, 0.99);
+    double ref = 0.25;
+    double actual = 0;
+    double control = 0;
+    // 2 - 3 Execute and validate
+    for (int i = 0; i < 3; i++)
+    {
+        control = pi.update(ref, actual);
+        _delay_ms(100);
+        actual = 2.0*control;
+    }
+    TEST_ASSERT_EQUAL_FLOAT(3.0, actual);
+    // Cleanup
 }
 
 int main()
@@ -43,7 +47,7 @@ int main()
 
     UNITY_BEGIN(); // IMPORTANT LINE!
 
-    RUN_TEST(test_integration);
+    RUN_TEST(test_simple_integration);
     RUN_TEST(test_anti_windup);
     // Add more unit tests here
 

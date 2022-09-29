@@ -5,7 +5,8 @@
 #include "initialization.h"
 #include "digital_out.h"
 #include "digital_in.h"
-#include "controller.h"
+#include "PI_controller.h"
+#include "P_controller.h"
 #include "timer0_msec.h"
 #include "timer_msec.h"
 #include "timer2_msec.h"
@@ -14,7 +15,7 @@ extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
-extern Controller controller;
+extern PI_Controller controller;
 
 extern Timer0_msec timer0;
 extern Timer_msec timer1;
@@ -33,7 +34,6 @@ void initialization_state::on_entry()
   Serial.println("Initializing motor");
   // initialize internal parameters
   
-  controller.init(0);
 	/////////// for H-bridge /////////////
 	in_1.set_lo();
 	in_2.set_hi();

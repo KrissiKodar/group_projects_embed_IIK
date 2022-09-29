@@ -4,8 +4,8 @@
 class Controller_test
 {
 public:
-    Controller_test();
     virtual double update(double ref, double actual) = 0;
+    virtual void brake() = 0;
 };
 
 #endif

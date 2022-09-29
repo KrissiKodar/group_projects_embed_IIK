@@ -12,7 +12,8 @@
 #include "digital_out.h"
 #include "digital_in.h"
 #include "encoder.h"
-#include "controller.h"
+#include "PI_controller.h"
+#include "P_controller.h"
 
 Digital_out led(5);
 Digital_out in_1(0);
@@ -20,7 +21,7 @@ Digital_out in_2(4);
 Digital_out PWM_pin(1);
 Digital_in encoder_input1(2);
 Digital_in encoder_input2(3);
-Controller controller;
+PI_Controller controller(0, 1.0, 0, 0.99);
 encoder enc;
 
 Timer0_msec timer0;
@@ -36,6 +37,9 @@ volatile float duty_cycle = 0.0;
 volatile double reference_speed = 140.0;
 volatile double error = 0.0;
 volatile double P = 1.4 / constants::max_speed;
+volatile double Ti = 0.01;
+volatile double integration_T = 0.001;
+volatile double max_output = 0.99;
 volatile double control_signal = 0.0;
 
 volatile int led_freq = 1;
@@ -114,16 +118,19 @@ ISR(TIMER0_COMPA_vect)
 	// Update the duty cycle value
 	duty_cycle = controller.update(reference_speed, speed);
 	
-	// if the duty cycle is greater than 100%, set it to 100%
-	// if the duty cycle is less than 0%, set it to 0%
-	if (duty_cycle >= 1.0)
+	// CW
+	if (duty_cycle < 0)
 	{
-		duty_cycle = 0.99;
+		in_1.set_hi();
+		in_2.set_lo();
 	}
-	else if (duty_cycle < 0.0)
+	else // CCW
 	{
-		duty_cycle = 0.0;
+		in_1.set_lo();
+		in_2.set_hi();
 	}
+	// absolute value of duty cycle
+	duty_cycle = abs(duty_cycle);
 	// set the duty cycle
 	timer2.set(duty_cycle);
 }

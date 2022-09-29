@@ -5,13 +5,13 @@
 #include "initialization.h"
 #include "digital_out.h"
 #include "digital_in.h"
-#include "controller.h"
+#include "PI_controller.h"
 
 extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
-extern Controller controller;
+extern PI_Controller controller;
 
 
 extern volatile int timer1_int_count;
@@ -20,7 +20,11 @@ extern volatile int led_freq;
 extern volatile bool cont;
 extern volatile double reference_speed;
 extern volatile double P;
+extern volatile double Ti;
+extern volatile double integration_T;
+extern volatile double max_output;
 extern volatile double speed;
+extern volatile float duty_cycle;
 
 void operational_state::on_do()
 {
@@ -30,7 +34,9 @@ void operational_state::on_do()
     Serial.print("Reference speed: ");
     Serial.print(reference_speed);
     Serial.print(" Actual speed: ");
-    Serial.println(speed);
+    Serial.print(speed);
+    Serial.print(" Duty cycle: ");
+    Serial.println(abs(duty_cycle));
 		timer1_int_count_2 = constants::interval;
 	} 
 }
@@ -40,7 +46,8 @@ void operational_state::on_entry()
   // ligh continuously on
   cont = true;
   led.set_hi();
-  controller.init(P);
+  //controller.init(P);
+  controller.init(P, Ti, integration_T, max_output);
   Serial.println("/////////// Motor is in operational mode /////////// ");
 }
 

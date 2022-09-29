@@ -15,7 +15,7 @@ PI_Controller::PI_Controller(double Kp, double Ti, double integration_T, double 
     this->max_output = max_output;
 }
 
-void PI_Controller::init(double Kp, double Ti, double integration_T, double max_output)
+void PI_Controller::init(double Kp, double Ti, double integration_T, double max_output = 0.99)
 {
     this->Kp = Kp;
     this->Ti = Ti;
