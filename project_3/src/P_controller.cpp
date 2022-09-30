@@ -1,12 +1,12 @@
 #include "P_controller.h"
 
-P_Controller::P_Controller(double Kp, double max_output = 0.99)
+P_Controller::P_Controller(float Kp, float max_output = 0.99)
 {
     this->Kp = Kp;
     this->max_output = max_output;
 }
 
-double P_Controller::update(double ref, double actual)
+float P_Controller::update(float ref, float actual)
 {
     error = ref - actual;
     output = Kp * error;

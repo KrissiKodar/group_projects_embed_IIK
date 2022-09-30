@@ -7,12 +7,12 @@ class Controller
 {
 public:
     Controller();
-    void init(double proportional_gain);
-    double update(double ref, double actual);
+    void init(float proportional_gain);
+    float update(float ref, float actual);
     void brake();
 private:
-    double error;
-    double Kp;
+    float error;
+    float Kp;
 };
 
 #endif 

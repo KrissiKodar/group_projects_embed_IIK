@@ -28,26 +28,25 @@ Timer0_msec timer0;
 Timer_msec timer1;
 Timer2_msec timer2;
 
-volatile double speed = 0.0;
-volatile int timer1_int_count = 0;
-volatile int timer1_int_count_2 = 0;
-volatile float duty_cycle = 0.0;
+float speed = 0.0;
+int timer1_int_count = 0;
+int timer1_int_count_2 = 0;
+float duty_cycle = 0.0;
 
+float reference_speed = 140.0;
+float error = 0.0;
+float P = 1.4 / constants::max_speed;
+float Ti = 0.01;
+float integration_T = 0.001;
+float max_output = 0.99;
+float control_signal = 0.0;
 
-volatile double reference_speed = 140.0;
-volatile double error = 0.0;
-volatile double P = 1.4 / constants::max_speed;
-volatile double Ti = 0.01;
-volatile double integration_T = 0.001;
-volatile double max_output = 0.99;
-volatile double control_signal = 0.0;
-
-volatile int led_freq = 1;
-volatile bool cont = false;
+int led_freq = 1;
+bool cont = false;
 // for storing speed and duty cycle values for the plots
-//volatile double speed_array[200];
-//volatile double duty_cycle_array[200];
-//volatile int index = 0;
+//double speed_array[200];
+//double duty_cycle_array[200];
+//int index = 0;
 
 Context *context;
 
@@ -55,7 +54,8 @@ void setup()
 {
 	///////// for serial monitor /////////
 	Serial.begin(9600);
-	////////////// for led ///////////////
+	// initialize internal parameters
+  ////////////// for led ///////////////
 	led.init();
 	/////////// for encoder /////////////
 	encoder_input1.init();
@@ -71,7 +71,8 @@ void setup()
 	enc.init_interrupt();
 	/////////// for timers /////////////
 	timer0.init(constants::control_rate);
-	timer1.init(constants::interval);		   // MILLISEC (max 4194.304 millisec)
+	timer1.init(constants::interval);// MILLISEC (max 4194.304 millisec)
+	timer2.init(1500, 0.0); // MICROSEC (max 16384 microsec)
 	context = new Context(new initialization_state);
 }
 
@@ -99,25 +100,20 @@ void loop()
 	if (command == 's')
 	context->command_stop();
 }
+
+
+
 // interrupts at every every pulse
 ISR(INT0_vect)
 {
 	// increment/decrement counter (counting pulses)
 	enc.position(encoder_input1.is_hi(), encoder_input2.is_hi());
-
-	// for measuring time constant
-	// GO = true;
 }
 
 // interrupts at update rate
 ISR(TIMER0_COMPA_vect)
 {
-	// Part 3 P control
-	// control output should be updated at a mininum rate
-	// set speed to x pulses per second
-	// Update the duty cycle value
 	duty_cycle = controller.update(reference_speed, speed);
-	
 	// CW
 	if (duty_cycle < 0)
 	{
@@ -129,7 +125,6 @@ ISR(TIMER0_COMPA_vect)
 		in_1.set_lo();
 		in_2.set_hi();
 	}
-	// absolute value of duty cycle
 	duty_cycle = abs(duty_cycle);
 	// set the duty cycle
 	timer2.set(duty_cycle);
@@ -165,7 +160,6 @@ ISR(TIMER1_COMPA_vect)
 ///////// PWM interrupts //////////
 ISR(TIMER2_COMPA_vect)
 {
-	
 	PWM_pin.set_hi();
 }
 

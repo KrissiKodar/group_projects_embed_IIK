@@ -13,11 +13,12 @@ extern Digital_out in_2;
 extern Digital_out PWM_pin;
 extern PI_Controller controller;
 
-extern volatile int timer1_int_count;
-extern volatile int led_freq;
-extern volatile bool cont;
-extern volatile double reference_speed;
-extern volatile double P;
+extern int timer1_int_count;
+extern int led_freq;
+extern bool cont;
+extern float reference_speed;
+extern float P;
+extern float Ti;
 
 void preoperational_state::on_do()
 {
@@ -37,8 +38,10 @@ void preoperational_state::on_entry()
     Serial.println("Enter reference speed: ");
     reference_speed = Serial.parseFloat();
     // print new line
-    Serial.println("Enter P value: ");
+    Serial.println("Enter K_p value: ");
     P = Serial.parseFloat()/constants::max_speed;
+    Serial.println("Enter T_i value: ");
+    Ti = Serial.parseFloat();
   }
   Serial.println("//////////////////////////////////// ");
 }

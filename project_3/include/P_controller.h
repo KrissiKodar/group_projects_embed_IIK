@@ -6,13 +6,13 @@
 class P_Controller: public Controller_test
 {
 public:
-    P_Controller(double Kp, double max_output = 0.99);
-    double update(double ref, double actual) override;
+    P_Controller(float Kp, const float max_output = 0.99);
+    float update(float ref, float actual) override;
 private:
-    double error;
-    double Kp;
-    double output;
-    double max_output;
+    float error;
+    float Kp;
+    float output;
+    float max_output;
 };
 
 #endif

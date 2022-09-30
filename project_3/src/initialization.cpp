@@ -10,19 +10,27 @@
 #include "timer0_msec.h"
 #include "timer_msec.h"
 #include "timer2_msec.h"
+#include "encoder.h"
 
 extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
+extern Digital_in encoder_input1;
+extern Digital_in encoder_input2;
 extern PI_Controller controller;
+extern encoder enc;
 
 extern Timer0_msec timer0;
 extern Timer_msec timer1;
 extern Timer2_msec timer2;
 
-extern volatile int timer1_int_count;
-extern volatile int led_freq;
+extern int timer1_int_count;
+extern int led_freq;
+extern float P;
+extern float Ti;
+extern float integration_T;
+extern float max_output;
 
 void initialization_state::on_do()
 {
@@ -32,13 +40,6 @@ void initialization_state::on_do()
 void initialization_state::on_entry()
 {
   Serial.println("Initializing motor");
-  // initialize internal parameters
-  
-	/////////// for H-bridge /////////////
-	in_1.set_lo();
-	in_2.set_hi();
-	timer2.init(1500, 0.0); // MICROSEC (max 16384 microsec)
-
   // enable interrupts
   sei();
   delay(2000);

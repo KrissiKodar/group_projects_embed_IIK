@@ -18,12 +18,12 @@ Controller::Controller()
 {
 }
 
-void Controller::init(double proportional_gain)
+void Controller::init(float proportional_gain)
 {
     Kp = proportional_gain;
 }
 
-double Controller::update(double ref, double actual)
+float Controller::update(float ref, float actual)
 {
     error = ref - actual;
     return Kp * error;

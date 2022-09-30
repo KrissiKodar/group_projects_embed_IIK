@@ -6,18 +6,18 @@
 class PI_Controller: public Controller_test
 {
 public:
-    PI_Controller(double Kp, double Ti, double integration_T, double max_output = 0.99);
-    void init(double Kp, double Ti, double integration_T, double max_output = 0.99);
-    double update(double ref, double actual) override;
+    PI_Controller(float Kp, float Ti, float integration_T, float max_output = 0.99);
+    void init(float Kp, float Ti, float integration_T, float max_output = 0.99);
+    float update(float ref, float actual) override;
     void brake() override;
 private:
-    double error;
-    double Kp;
-    double Ti;
-    double integration_T;
-    double max_output = 1.0;
-    double sum_error = 0;
-    double output = 0;
+    float error;
+    float Kp;
+    float Ti;
+    float integration_T;
+    float max_output = 1.0;
+    float sum_error = 0;
+    float output = 0;
 };
 
 #endif

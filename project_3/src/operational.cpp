@@ -6,25 +6,27 @@
 #include "digital_out.h"
 #include "digital_in.h"
 #include "PI_controller.h"
+#include "timer2_msec.h"
 
 extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
 extern PI_Controller controller;
+extern Timer2_msec timer2;
 
 
-extern volatile int timer1_int_count;
-extern volatile int timer1_int_count_2;
-extern volatile int led_freq;
-extern volatile bool cont;
-extern volatile double reference_speed;
-extern volatile double P;
-extern volatile double Ti;
-extern volatile double integration_T;
-extern volatile double max_output;
-extern volatile double speed;
-extern volatile float duty_cycle;
+extern int timer1_int_count;
+extern int timer1_int_count_2;
+extern int led_freq;
+extern bool cont;
+extern float reference_speed;
+extern float P;
+extern float Ti;
+extern float integration_T;
+extern float max_output;
+extern float speed;
+extern float duty_cycle;
 
 void operational_state::on_do()
 {
@@ -38,8 +40,9 @@ void operational_state::on_do()
     Serial.print(" Duty cycle: ");
     Serial.println(abs(duty_cycle));
 		timer1_int_count_2 = constants::interval;
-	} 
+	}
 }
+
 
 void operational_state::on_entry()
 {

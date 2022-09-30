@@ -13,9 +13,9 @@ extern Digital_out in_2;
 extern Digital_out PWM_pin;
 extern PI_Controller controller;
 
-extern volatile int timer1_int_count;
-extern volatile int led_freq;
-extern volatile bool cont;
+extern int timer1_int_count;
+extern int led_freq;
+extern bool cont;
 
 void stopped_state::on_do()
 {
