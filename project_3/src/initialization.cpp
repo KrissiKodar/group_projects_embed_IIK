@@ -18,7 +18,8 @@ extern Digital_out in_2;
 extern Digital_out PWM_pin;
 extern Digital_in encoder_input1;
 extern Digital_in encoder_input2;
-extern PI_Controller controller;
+extern PI_Controller pi_controller;
+extern P_Controller p_controller;
 extern encoder enc;
 
 extern Timer0_msec timer0;
@@ -40,6 +41,8 @@ void initialization_state::on_do()
 void initialization_state::on_entry()
 {
   Serial.println("Initializing motor");
+  pi_controller.init(0, 1.0, 0, 0.99);
+  p_controller.init(0, 0.99);
   // enable interrupts
   sei();
   delay(2000);

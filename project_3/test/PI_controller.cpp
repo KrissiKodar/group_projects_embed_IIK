@@ -7,23 +7,25 @@ extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
 
-PI_Controller::PI_Controller(double Kp, double Ti, double integration_T, double max_output = 0.99)
+PI_Controller::PI_Controller(float Kp, float Ti, float integration_T, float max_output)
 {
     this->Kp = Kp;
     this->Ti = Ti;
     this->integration_T = integration_T;
     this->max_output = max_output;
+    sum_error = 0;
 }
 
-void PI_Controller::init(double Kp, double Ti, double integration_T, double max_output)
+void PI_Controller::init(float Kp, float Ti, float integration_T, float max_output)
 {
     this->Kp = Kp;
     this->Ti = Ti;
     this->integration_T = integration_T;
     this->max_output = max_output;
+    sum_error = 0;
 }
 
-double PI_Controller::update(double ref, double actual)
+float PI_Controller::update(float ref, float actual)
 {
     error = ref - actual;
     sum_error += error * integration_T;

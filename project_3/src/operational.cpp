@@ -7,17 +7,19 @@
 #include "digital_in.h"
 #include "PI_controller.h"
 #include "timer2_msec.h"
+#include "motor_driver.h"
 
 extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
-extern PI_Controller controller;
+extern Controller* chosen_controller;
 extern Timer2_msec timer2;
 
 
 extern int timer1_int_count;
 extern int timer1_int_count_2;
+extern int update_time;
 extern int led_freq;
 extern bool cont;
 extern float reference_speed;
@@ -41,6 +43,13 @@ void operational_state::on_do()
     Serial.println(abs(duty_cycle));
 		timer1_int_count_2 = constants::interval;
 	}
+
+  if ((update_time % 2) == 1)
+  {
+    motor_driver(*chosen_controller);
+    update_time = 0;
+  }
+  
 }
 
 
@@ -50,7 +59,7 @@ void operational_state::on_entry()
   cont = true;
   led.set_hi();
   //controller.init(P);
-  controller.init(P, Ti, integration_T, max_output);
+  //chosen.controller.init(P, Ti, integration_T, max_output);
   Serial.println("/////////// Motor is in operational mode /////////// ");
 }
 

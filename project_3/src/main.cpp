@@ -5,13 +5,13 @@
 #include "constants.h"
 #include "context.h"
 #include "initialization.h"
-
 #include "timer0_msec.h"
 #include "timer_msec.h"
 #include "timer2_msec.h"
 #include "digital_out.h"
 #include "digital_in.h"
 #include "encoder.h"
+#include "controller.h"
 #include "PI_controller.h"
 #include "P_controller.h"
 
@@ -21,7 +21,9 @@ Digital_out in_2(4);
 Digital_out PWM_pin(1);
 Digital_in encoder_input1(2);
 Digital_in encoder_input2(3);
-PI_Controller controller(0, 1.0, 0, 0.99);
+PI_Controller pi_controller(0, 1.0, 0, 0.99);
+P_Controller p_controller(0, 0.99);
+Controller* chosen_controller{nullptr};
 encoder enc;
 
 Timer0_msec timer0;
@@ -31,6 +33,7 @@ Timer2_msec timer2;
 float speed = 0.0;
 int timer1_int_count = 0;
 int timer1_int_count_2 = 0;
+int update_time = 0.0;
 float duty_cycle = 0.0;
 
 float reference_speed = 140.0;
@@ -113,21 +116,7 @@ ISR(INT0_vect)
 // interrupts at update rate
 ISR(TIMER0_COMPA_vect)
 {
-	duty_cycle = controller.update(reference_speed, speed);
-	// CW
-	if (duty_cycle < 0)
-	{
-		in_1.set_hi();
-		in_2.set_lo();
-	}
-	else // CCW
-	{
-		in_1.set_lo();
-		in_2.set_hi();
-	}
-	duty_cycle = abs(duty_cycle);
-	// set the duty cycle
-	timer2.set(duty_cycle);
+	update_time += 1;
 }
 
 // interrupts at every interval ms and calculates speed

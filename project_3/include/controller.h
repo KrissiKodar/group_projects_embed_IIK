@@ -1,19 +1,11 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
-#include <stdint.h>
-#include <avr/io.h>
 
 class Controller
 {
 public:
-    Controller();
-    void init(float proportional_gain);
-    float update(float ref, float actual);
-    void brake();
-private:
-    float error;
-    float Kp;
+    virtual float update(float ref, float actual) = 0;
+    virtual void brake() = 0;
 };
 
-#endif 
-
+#endif

@@ -11,7 +11,7 @@ extern Digital_out led;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
-extern PI_Controller controller;
+extern Controller* chosen_controller;
 
 extern int timer1_int_count;
 extern int led_freq;
@@ -23,7 +23,7 @@ void stopped_state::on_do()
 
 void stopped_state::on_entry()
 {
-  controller.brake();
+  (*chosen_controller).brake();
   cont = false;
   led_freq = 2;
   Serial.println("/////////// Motor is in stopped mode /////////// ");

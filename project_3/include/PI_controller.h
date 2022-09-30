@@ -1,13 +1,13 @@
 #ifndef PI_CONTROLLER_H
 #define PI_CONTROLLER_H
 
-#include "controller_test.h"
+#include "controller.h"
 
-class PI_Controller: public Controller_test
+class PI_Controller: public Controller
 {
 public:
-    PI_Controller(float Kp, float Ti, float integration_T, float max_output = 0.99);
-    void init(float Kp, float Ti, float integration_T, float max_output = 0.99);
+    PI_Controller(float Kp, float Ti, float integration_T, float max_output);
+    void init(float Kp, float Ti, float integration_T, float max_output);
     float update(float ref, float actual) override;
     void brake() override;
 private:
