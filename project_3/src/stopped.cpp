@@ -1,4 +1,5 @@
 #include "constants.h"
+#include <stdint.h>
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -14,7 +15,7 @@ extern Digital_out PWM_pin;
 extern Controller* chosen_controller;
 
 extern int timer1_int_count;
-extern int led_freq;
+extern uint8_t led_freq;
 extern bool cont;
 
 void stopped_state::on_do()

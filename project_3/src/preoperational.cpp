@@ -1,4 +1,5 @@
 #include "constants.h"
+#include <stdint.h>
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -17,13 +18,11 @@ extern P_Controller p_controller;
 extern Controller* chosen_controller;
 
 extern int timer1_int_count;
-extern int led_freq;
+extern uint8_t led_freq;
 extern bool cont;
 extern float reference_speed;
 extern float P;
 extern float Ti;
-extern float integration_T;
-extern float max_output;
 
 void preoperational_state::on_do()
 {
@@ -54,13 +53,13 @@ void preoperational_state::on_entry()
     if (command == 1)
     {
       Serial.println("P-controller selected");
-      p_controller.init(P,max_output);
+      p_controller.init(P,constants::max_output);
       chosen_controller = &p_controller;
     }
     else if (command == 2)
     {
       Serial.println("PI-controller selected");
-      pi_controller.init(P, Ti, integration_T, max_output);
+      pi_controller.init(P, Ti, constants::integration_T, constants::max_output);
       chosen_controller = &pi_controller;
     }
   }

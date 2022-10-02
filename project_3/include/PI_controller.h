@@ -6,7 +6,6 @@
 class PI_Controller: public Controller
 {
 public:
-    PI_Controller(float Kp, float Ti, float integration_T, float max_output);
     void init(float Kp, float Ti, float integration_T, float max_output);
     float update(float ref, float actual) override;
     void brake() override;

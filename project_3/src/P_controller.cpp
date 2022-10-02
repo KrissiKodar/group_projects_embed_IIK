@@ -6,12 +6,6 @@ extern Digital_out in_1;
 extern Digital_out in_2;
 extern Digital_out PWM_pin;
 
-P_Controller::P_Controller(float Kp, float max_output)
-{
-    this->Kp = Kp;
-    this->max_output = max_output;
-}
-
 void P_Controller::init(float Kp, float max_output)
 {
     this->Kp = Kp;

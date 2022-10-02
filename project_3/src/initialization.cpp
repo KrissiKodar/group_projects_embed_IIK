@@ -1,4 +1,5 @@
 #include "constants.h"
+#include <stdint.h>
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -27,11 +28,9 @@ extern Timer_msec timer1;
 extern Timer2_msec timer2;
 
 extern int timer1_int_count;
-extern int led_freq;
+extern uint8_t led_freq;
 extern float P;
 extern float Ti;
-extern float integration_T;
-extern float max_output;
 
 void initialization_state::on_do()
 {
@@ -41,8 +40,8 @@ void initialization_state::on_do()
 void initialization_state::on_entry()
 {
   Serial.println("Initializing motor");
-  pi_controller.init(0, 1.0, 0, 0.99);
-  p_controller.init(0, 0.99);
+  pi_controller.init(0, 1.0, constants::integration_T, constants::max_output);
+  p_controller.init(0, constants::max_output);
   // enable interrupts
   sei();
   delay(2000);

@@ -1,4 +1,5 @@
 #include "constants.h"
+#include <stdint.h>
 #include "stopped.h"
 #include "operational.h"
 #include "preoperational.h"
@@ -18,15 +19,13 @@ extern Timer2_msec timer2;
 
 
 extern int timer1_int_count;
-extern int timer1_int_count_2;
-extern int update_time;
-extern int led_freq;
+extern uint16_t  timer1_int_count_2;
+extern uint8_t update_time;
+extern uint8_t led_freq;
 extern bool cont;
 extern float reference_speed;
 extern float P;
 extern float Ti;
-extern float integration_T;
-extern float max_output;
 extern float speed;
 extern float duty_cycle;
 
