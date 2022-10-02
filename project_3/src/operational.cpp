@@ -29,6 +29,8 @@ extern float Ti;
 extern float speed;
 extern float duty_cycle;
 
+//extern bool start;
+
 void operational_state::on_do()
 {
   if ((timer1_int_count_2 % 1000) == 0)
@@ -54,6 +56,7 @@ void operational_state::on_do()
 
 void operational_state::on_entry()
 {
+  //start = true;
   // ligh continuously on
   cont = true;
   led.set_hi();

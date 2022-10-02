@@ -1,12 +1,18 @@
 #include "P_controller.h"
+#include "digital_out.h"
 
-P_Controller::P_Controller(double Kp, double max_output = 0.99)
+extern Digital_out led;
+extern Digital_out in_1;
+extern Digital_out in_2;
+extern Digital_out PWM_pin;
+
+void P_Controller::init(float Kp, float max_output)
 {
     this->Kp = Kp;
     this->max_output = max_output;
 }
 
-double P_Controller::update(double ref, double actual)
+float P_Controller::update(float ref, float actual)
 {
     error = ref - actual;
     output = Kp * error;
@@ -19,4 +25,10 @@ double P_Controller::update(double ref, double actual)
         output = -max_output;
     }
     return output;
+}
+
+void P_Controller::brake()
+{
+    in_1.set_hi();
+	in_2.set_hi();
 }

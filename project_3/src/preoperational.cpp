@@ -35,7 +35,7 @@ void preoperational_state::on_entry()
   Serial.println("/////////// Configuration /////////// ");
   // read in input from serial
   // set the input as the value for the P controller
-  int command = 0;
+  int8_t command = 0;
   cont = false;
   led_freq = 1; // Hz
   while (Serial.available() == 0)
@@ -44,9 +44,9 @@ void preoperational_state::on_entry()
     reference_speed = Serial.parseFloat();
     // print new line
     Serial.println("Enter K_p value: ");
-    P = Serial.parseFloat()/constants::max_speed;
+    P = Serial.parseFloat()/constants::max_speed; //Ziegler-nichols value is 1.8
     Serial.println("Enter T_i value: ");
-    Ti = Serial.parseFloat();
+    Ti = Serial.parseFloat(); // Ziegler-nichols value is 0.048
     Serial.println("Press 1 for P-controller");
     Serial.println("Press 2 for PI-controller");
     command = Serial.parseInt();

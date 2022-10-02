@@ -41,15 +41,15 @@ float reference_speed = 140.0;
 float error = 0.0;
 float P = 1.4 / constants::max_speed;
 float Ti = 0.01;
-//float integration_T = 0.001;
-//float max_output = 0.99;
 
 uint8_t led_freq = 1;
 bool cont = false;
-// for storing speed and duty cycle values for the plots
-//double speed_array[200];
+
+// for storing speed and duty cycle values for the plots!!!
+//float speed_array[200];
 //double duty_cycle_array[200];
 //int index = 0;
+//bool start = false;
 
 Context *context;
 
@@ -59,30 +59,14 @@ void setup()
 	Serial.begin(9600);
 	// initialize internal parameters
   ////////////// for led ///////////////
-	led.init();
-	/////////// for encoder /////////////
-	encoder_input1.init();
-	encoder_input2.init();
-	enc.init(encoder_input1.is_hi());
-
-	/////////// for H-bridge /////////////
-	PWM_pin.init();
-	in_1.init();
-	in_2.init();
-
-	// use if encoder is connected to interrupt pins
-	enc.init_interrupt();
-	/////////// for timers /////////////
-	timer0.init(constants::control_rate);
-	timer1.init(constants::interval);// MILLISEC (max 4194.304 millisec)
-	timer2.init(1500, 0.0); // MICROSEC (max 16384 microsec)
+	
 	context = new Context(new initialization_state);
 }
 
 void loop()
 {
 	// put your main code here, to run repeatedly:
-	int command = 0;
+	int8_t command = 0;
 
 	//delay(100);
 
@@ -140,10 +124,13 @@ ISR(TIMER1_COMPA_vect)
 		timer1_int_count = 0;
 	}
 
-	// puts speed and duty cycle values in arrays for plotting
-	/* speed_array[index] = speed;
-	duty_cycle_array[index] = duty_cycle;
-	index++; */
+	// for plots
+	/* if ((start == true) && (index < 200))
+	{
+		speed_array[index] = speed;
+		//duty_cycle_array[index] = duty_cycle;
+		index += 1;
+	} */
 }
 
 ///////// PWM interrupts //////////

@@ -40,11 +40,27 @@ void initialization_state::on_do()
 void initialization_state::on_entry()
 {
   Serial.println("Initializing motor");
-  pi_controller.init(0, 1.0, constants::integration_T, constants::max_output);
-  p_controller.init(0, constants::max_output);
   // enable interrupts
+  led.init();
+	/////////// for encoder /////////////
+	encoder_input1.init();
+	encoder_input2.init();
+	enc.init(encoder_input1.is_hi());
+
+	/////////// for H-bridge /////////////
+	PWM_pin.init();
+	in_1.init();
+	in_2.init();
+
+	// use if encoder is connected to interrupt pins
+	enc.init_interrupt();
+	/////////// for timers /////////////
+	timer0.init(constants::control_rate);
+	timer1.init(constants::interval);// MILLISEC (max 4194.304 millisec)
+	timer2.init(1500, 0.0); // MICROSEC (max 16384 microsec)
+
   sei();
-  delay(2000);
+  //delay(2000);
   // when the timer expires, transition to red
   Serial.println("Motor initialized, ready to receive commands.");
   this->context_->transition_to(new preoperational_state);

@@ -18,6 +18,10 @@ extern int timer1_int_count;
 extern uint8_t led_freq;
 extern bool cont;
 
+/* extern float speed_array[200];
+extern bool start;
+extern int index; */
+
 void stopped_state::on_do()
 {
 }
@@ -28,6 +32,19 @@ void stopped_state::on_entry()
   cont = false;
   led_freq = 2;
   Serial.println("/////////// Motor is in stopped mode /////////// ");
+  /* // print speed_array to serial in a python list format
+  Serial.print("[");
+  for (int i = 0; i < 200; i++)
+  {
+    Serial.print(speed_array[i]);
+    if (i < 199)
+    {
+      Serial.print(", ");
+    }
+  }
+  Serial.println("]");
+  start = false;
+  index = 0; */
 }
 
 void stopped_state::on_exit()
