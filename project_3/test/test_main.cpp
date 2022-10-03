@@ -5,7 +5,8 @@
 void test_simple_integration(void)
 {
     // 1 Setup
-    PI_Controller pi(1.0, 1.0, 1.0,0.99);
+    PI_Controller pi;
+    pi.init(1.0, 1.0, 1.0, 1000);
     double ref = 10.0;
     double actual = 0;
     double control = 0;
@@ -24,7 +25,8 @@ void test_anti_windup(void)
 
 {
     // 1 Setup
-    PI_Controller pi(1.0, 1.0, 1.0, 0.99);
+    PI_Controller pi;
+    pi.init(1.0, 1.0, 1.0, 1000);
     double ref = 0.25;
     double actual = 0;
     double control = 0;
