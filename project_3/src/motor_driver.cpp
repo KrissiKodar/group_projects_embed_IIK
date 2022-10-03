@@ -9,9 +9,9 @@ extern Digital_out in_1;
 extern Digital_out in_2;
 extern Timer2_msec timer2;
 
-void motor_driver(Controller& cont)
+void motor_driver(Controller* cont)
 {
-    duty_cycle = cont.update(reference_speed, speed);
+    duty_cycle = cont->update(reference_speed, speed);
 	// CW
 	if (duty_cycle < 0)
 	{

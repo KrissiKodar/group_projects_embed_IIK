@@ -47,7 +47,7 @@ void operational_state::on_do()
 
   if ((update_time % 2) == 1)
   {
-    motor_driver(*chosen_controller);
+    motor_driver(chosen_controller);
     update_time = 0;
   }
   

@@ -5,7 +5,7 @@
 void test_simple_integration(void)
 {
     // 1 Setup
-    PI_Controller pi(1.0, 1.0, 1.0);
+    PI_Controller pi(1.0, 1.0, 1.0,0.99);
     double ref = 10.0;
     double actual = 0;
     double control = 0;

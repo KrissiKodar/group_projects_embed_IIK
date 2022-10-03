@@ -3,6 +3,6 @@
 
 #include "controller.h"
 
-void motor_driver(Controller& cont);
+void motor_driver(Controller* cont);
 
 #endif
