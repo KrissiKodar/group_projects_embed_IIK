@@ -21,6 +21,7 @@ static struct class*  encoderClass  = NULL; ///< The device-driver class struct 
 static struct device* encoderDevice = NULL; ///< The device-driver device struct pointer
 
 static int counter = 0;
+static char message[sizeof(int)] = {0};
 static bool current_input = 0;
 //static bool last_input1 = 0;
 
@@ -33,13 +34,15 @@ static unsigned int irqNumber;                // share IRQ num within file
 static bool         ledOn = 0;                // used to invert state of LED
 
 // The prototype functions for the character driver -- must come before the struct definition
+static int encoder_open(struct inode *, struct file *);
 static ssize_t encoder_read(struct file *, char *, size_t, loff_t *);
 static int     encoder_release(struct inode *, struct file *);
 
 static struct file_operations fops =
 {
-   .read = encoder_read,
-   .release = encoder_release,
+    .open = encoder_open,
+    .read = encoder_read,
+    .release = encoder_release,
 };
 
 // prototype for the custom IRQ handler function, function below 
@@ -143,13 +146,19 @@ static void __exit erpi_gpio_exit(void)
     printk(KERN_INFO "Motor_encoder: Goodbye from the LKM!\n");
 }
 
+static int encoder_open(struct inode *inodep, struct file *filep){
+    counter = 0;
+    return 0;
+}
+
+
 static irq_handler_t erpi_gpio_irq_handler(unsigned int irq, 
                                            void *dev_id, struct pt_regs *regs) 
 {   
     ledOn = !ledOn;                          // toggle the LED state   
     gpio_set_value(gpioLED, ledOn);          // set LED accordingly  
-    printk(KERN_INFO "Motor encoder: Interrupt! (interrupt pin is %d)\n", 
-           gpio_get_value(enc_input1));
+    /* printk(KERN_INFO "Motor encoder: Interrupt! (counter is %d)\n", 
+           counter); */
     current_input = gpio_get_value(enc_input2);
     if (current_input == 0)
     {
@@ -163,24 +172,26 @@ static irq_handler_t erpi_gpio_irq_handler(unsigned int irq,
 }
 
 static ssize_t encoder_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-   //int error_count = 0;
-   // copy_to_user has the format ( * to, *from, size) and returns 0 on success
-   //error_count = copy_to_user(buffer, &counter, sizeof(counter));
-   /* if (error_count==0){            // if true then have success
-      //printk(KERN_INFO "motor_encoder: Sent %d characters to the user\n", sizeof(counter));
-      return sizeof(counter);  // clear the position to the start and return 0
-   }
-   else {
-      //printk(KERN_INFO "motor_encoder: Failed to send %d characters to the user\n", error_count);
-      return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
-   } */
-   return put_user(counter, buffer);
+    int error_count = 0;
+    sprintf(message, "%i", counter);
+    // copy_to_user has the format ( * to, *from, size) and returns 0 on success
+    error_count = copy_to_user(buffer, message, sizeof(int));
+    counter = 0;
+    if (error_count==0){            // if true then have success
+        //printk(KERN_INFO "motor_encoder: Sent %d characters to the user\n", sizeof(counter));
+        return 0;  // clear the position to the start and return 0
+    }
+    else {
+        //printk(KERN_INFO "motor_encoder: Failed to send %d characters to the user\n", error_count);
+        return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
+    }
 }
 
 
 static int encoder_release(struct inode *inodep, struct file *filep){
-   printk(KERN_INFO "Motor encoder: Device successfully closed\n");
-   return 0;
+    counter = 0;
+    printk(KERN_INFO "Motor encoder: Device successfully closed\n");
+    return 0;
 }
 
 module_init(erpi_gpio_init);
