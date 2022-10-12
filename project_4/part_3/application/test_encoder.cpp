@@ -63,6 +63,7 @@ static char duty_cycle_to_PWM[sizeof(int)] = {0};
 
 int main(){
     int ret, fd;
+    int encoder_count;
     int msec;
     int exit_counter = 0;
     int end_program_check = 20;
@@ -90,7 +91,12 @@ int main(){
 
     //Set gpio22 as output
     fd = open("/sys/class/gpio/gpio22/direction", O_WRONLY);
-    write(fd, "out", 2);
+    write(fd, "out", 3);
+    close(fd);
+
+    //Set gpio22 as low
+    fd = open("/sys/class/gpio/gpio22/value", O_WRONLY);
+    write(fd, "0", 1);
     close(fd);
 
     //Enable gpio27
@@ -100,27 +106,32 @@ int main(){
 
     //Set gpio27 as output
     fd = open("/sys/class/gpio/gpio27/direction", O_WRONLY);
-    write(fd, "out", 2);
+    write(fd, "out", 3);
+    close(fd);
+
+    // set gpio27 high
+    fd = open("/sys/class/gpio/gpio27/value", O_WRONLY);
+    write(fd, "1", 1);
     close(fd);
 
     // next we make gpio13 a PWM output
     fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY);
-    write(fd, "0", 1);
+    write(fd, "1", 1);
     close(fd);
 
     // set the period to 15ms
-    fd = open("/sys/class/pwm/pwmchip0/pwm0/period", O_WRONLY);
+    fd = open("/sys/class/pwm/pwmchip0/pwm1/period", O_WRONLY);
     write(fd, "15000000", 8);
     close(fd);
 
     // set the duty cycle to 0ms
-    fd = open("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", O_WRONLY);
-    write(fd, "0", 7);
+    fd = open("/sys/class/pwm/pwmchip0/pwm1/duty_cycle", O_WRONLY);
+    write(fd, "0", 1);
     close(fd);
 
     // enable the PWM
-    fd = open("/sys/class/pwm/pwmchip0/pwm0/enable", O_WRONLY);
-    write(fd, "1", 1);
+    fd = open("/sys/class/pwm/pwmchip0/pwm1/enable", O_WRONLY);
+    write(fd, "7500000", 7);
     close(fd);
 
     printf("Starting device test code example...\n");
@@ -129,7 +140,7 @@ int main(){
         perror("Failed to open the device...");
         return errno;
     }
-    printf("The reference speed is %d", reference_speed);
+    printf("The reference speed is %d \n", reference_speed);
     clock_gettime(CLOCK_MONOTONIC, &start);
     while(1)
     {
@@ -146,17 +157,17 @@ int main(){
 
         if (measurement_time > measurement_interval)
         {
-            // read encoder
             ret = read(fd, receive, sizeof(int));        // Read the response from the LKM
             if (ret < 0)
             {
                 perror("Failed to read the message from the device.");
                 return errno;
             }
-            int encoder_count = *((int*)receive);
-            //int encoder_count = strtol(receive, nullptr, 10);
+            
+            encoder_count = strtol(receive, nullptr, 10);
+            printf("encoder_count = %i \n", encoder_count);
             speed = (((encoder_count / measurement_interval) * 1000.0) / 700.0) * 60.0;
-
+            printf("speed = %i \n", speed);
             duty_cycle = controller.update(reference_speed, speed);
             // CW
             if (duty_cycle < 0)
@@ -164,22 +175,18 @@ int main(){
                 duty_cycle = 0;
             }
             // set the duty cycle
+            printf("The duty cycle is %f \n", duty_cycle);
             int set_duty_cycle = duty_cycle * 15000000;
-            sprintf(duty_cycle_to_PWM, "%d", set_duty_cycle);
-            fd = open("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", O_WRONLY);
+
+            /* sprintf(duty_cycle_to_PWM, "%i", set_duty_cycle);
+            fd = open("/sys/class/pwm/pwmchip0/pwm1/duty_cycle", O_WRONLY);
             write(fd, duty_cycle_to_PWM, sizeof(int));
-            close(fd);
+            close(fd); */
             measurement_time = 0;
         }
 
         if(print_time > 1000)
         {
-            ret = read(fd, receive, sizeof(int));        // Read the response from the LKM
-            if (ret < 0)
-            {
-                perror("Failed to read the message from the device.");
-                return errno;
-            }
             /* printf("The received message is: [%s]\n", receive);
             receive_int = strtol(receive, nullptr, 10);
             printf("The counter value is: [%i]\n", receive_int); */
@@ -192,6 +199,17 @@ int main(){
         if(exit_counter > end_program_check)
         {
             ret = close(fd);
+            // disable gpio22, gpio27 and pwm0
+            fd = open("/sys/class/gpio/unexport", O_WRONLY);
+            write(fd, "22", 2);
+            close(fd);
+            fd = open("/sys/class/gpio/unexport", O_WRONLY);
+            write(fd, "27", 2);
+            close(fd);
+            fd = open("/sys/class/pwm/pwmchip0/unexport", O_WRONLY);
+            write(fd, "1", 1);
+            close(fd);
+
             break;
         }
     }
