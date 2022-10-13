@@ -10,6 +10,7 @@
 */
 #include<stdio.h>
 #include<stdlib.h>
+#include<iostream>
 #include<errno.h>
 #include<fcntl.h>
 #include<string.h>
@@ -58,6 +59,15 @@ private:
     float output = 0;
 };
 
+
+void set_pwm(char* duty_cycle_to_PWM)
+{
+    int fd;
+    fd = open("/sys/class/pwm/pwmchip0/pwm1/duty_cycle", O_WRONLY);
+    write(fd, duty_cycle_to_PWM, sizeof(int));
+    close(fd);
+}
+
 static char receive[sizeof(int)];     ///< The receive buffer from the LKM
 static char duty_cycle_to_PWM[sizeof(int)] = {0};
 
@@ -68,15 +78,19 @@ int main(){
     int exit_counter = 0;
     int end_program_check = 20;
 
-    const int reference_speed = 100;
-    int speed = 0;
+    float reference_speed;
+    float speed = 0;
+    float average_speed = 0;
+    const int period = 6000;
     float duty_cycle = 0;
 
     //int update_time;
-    int measurement_time;
-    int print_time;
+    //int measurement_time;
+    int exit_time;
     //int update_interval = 6;
-    const int measurement_interval = 20;
+    const float measurement_interval = 20;
+
+    int last_count = 0;
 
     // timer (using relative timers not delay)
     struct timespec start, end;
@@ -94,9 +108,9 @@ int main(){
     write(fd, "out", 3);
     close(fd);
 
-    //Set gpio22 as low
+    //Set gpio22 as high
     fd = open("/sys/class/gpio/gpio22/value", O_WRONLY);
-    write(fd, "0", 1);
+    write(fd, "1", 1);
     close(fd);
 
     //Enable gpio27
@@ -109,9 +123,9 @@ int main(){
     write(fd, "out", 3);
     close(fd);
 
-    // set gpio27 high
+    // set gpio27 low
     fd = open("/sys/class/gpio/gpio27/value", O_WRONLY);
-    write(fd, "1", 1);
+    write(fd, "0", 1);
     close(fd);
 
     // next we make gpio13 a PWM output
@@ -119,9 +133,9 @@ int main(){
     write(fd, "1", 1);
     close(fd);
 
-    // set the period to 15ms
+    // set the period of pwm
     fd = open("/sys/class/pwm/pwmchip0/pwm1/period", O_WRONLY);
-    write(fd, "15000000", 8);
+    write(fd, "6000", 4);
     close(fd);
 
     // set the duty cycle to 0ms
@@ -131,8 +145,14 @@ int main(){
 
     // enable the PWM
     fd = open("/sys/class/pwm/pwmchip0/pwm1/enable", O_WRONLY);
-    write(fd, "7500000", 7);
+    write(fd, "1", 1);
     close(fd);
+
+    // ask user input for reference speed
+    printf("PROGRAM START\n");
+    std::cout << "Enter reference speed: ";
+    std::cin >> reference_speed;
+    printf("The reference speed is %d \n", reference_speed);
 
     printf("Starting device test code example...\n");
     fd = open("/dev/motor_encoder", O_RDWR);             // Open the device with read/write access
@@ -140,22 +160,13 @@ int main(){
         perror("Failed to open the device...");
         return errno;
     }
-    printf("The reference speed is %d \n", reference_speed);
+    
     clock_gettime(CLOCK_MONOTONIC, &start);
     while(1)
     {
         clock_gettime(CLOCK_MONOTONIC, &end);
         msec = (end.tv_sec - start.tv_sec) * 1000 + (end.tv_nsec - start.tv_nsec) / 1000000;
-        if (msec > 1)
-        {
-            // update timer variables
-            //update_time++;
-            measurement_time++;
-            print_time++;
-            clock_gettime(CLOCK_MONOTONIC, &start);
-        }
-
-        if (measurement_time > measurement_interval)
+        if (msec > measurement_interval)
         {
             ret = read(fd, receive, sizeof(int));        // Read the response from the LKM
             if (ret < 0)
@@ -165,34 +176,50 @@ int main(){
             }
             
             encoder_count = strtol(receive, nullptr, 10);
-            printf("encoder_count = %i \n", encoder_count);
-            speed = (((encoder_count / measurement_interval) * 1000.0) / 700.0) * 60.0;
-            printf("speed = %i \n", speed);
+            //printf("encoder_count = %i \n", encoder_count);
+            speed = (((encoder_count/measurement_interval) * 1000.0) / 700.0) * 60.0;
+            average_speed = average_speed + (speed - average_speed) / 10.0;
+            // print actual speed
+            // clear terminal after every print
+            //printf("\033[2J\033[1;1H");
+            // print the speed rounded to 2 decimal places
+            //printf("Actual speed: %.2f \n", speed);
+            //speed = ((((encoder_count - last_count)/ measurement_interval) * 1000.0) / 700.0) * 60.0;
             duty_cycle = controller.update(reference_speed, speed);
             // CW
             if (duty_cycle < 0)
             {
                 duty_cycle = 0;
             }
-            // set the duty cycle
-            printf("The duty cycle is %f \n", duty_cycle);
-            int set_duty_cycle = duty_cycle * 15000000;
 
-            /* sprintf(duty_cycle_to_PWM, "%i", set_duty_cycle);
-            fd = open("/sys/class/pwm/pwmchip0/pwm1/duty_cycle", O_WRONLY);
-            write(fd, duty_cycle_to_PWM, sizeof(int));
-            close(fd); */
-            measurement_time = 0;
+            int set_duty_cycle = duty_cycle * period;
+            sprintf(duty_cycle_to_PWM, "%i", set_duty_cycle);
+            set_pwm(duty_cycle_to_PWM);
+
+            last_count = encoder_count;
+           
+            exit_time += measurement_interval;
+            clock_gettime(CLOCK_MONOTONIC, &start);
         }
 
-        if(print_time > 1000)
+
+        if(exit_time > 500)
         {
             /* printf("The received message is: [%s]\n", receive);
             receive_int = strtol(receive, nullptr, 10);
             printf("The counter value is: [%i]\n", receive_int); */
-            printf("The actual speed is: [%i]\n", speed);
+            //int lol = duty_cycle * period;
+            //printf("The duty cycle is %f \n", duty_cycle);
+            //printf("set_duty_cycle = %i \n", lol);
+            // print duty_cycle_to_PWM
+            //printf("duty_cycle_to_PWM = %s \n", duty_cycle_to_PWM);
+            //printf("The actual speed is: [%i]\n", speed);
+            printf("\033[2J\033[1;1H");
+            printf("Actual speed: %.2f \n", speed);
+            printf("Average speed: %.2f \n", average_speed);
+            printf("The duty cycle is %f \n", duty_cycle);
             exit_counter++;
-            print_time = 0;
+            exit_time = 0;
         }
 
         // after en_program_time seconds exit and close the device

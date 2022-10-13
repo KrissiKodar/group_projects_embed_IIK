@@ -34,7 +34,6 @@ __used __section("__versions") = {
 	{ 0xc1514a3b, "free_irq" },
 	{ 0x92d5838e, "request_threaded_irq" },
 	{ 0xfe57199f, "gpiod_to_irq" },
-	{ 0x8b02fce7, "gpiod_set_debounce" },
 	{ 0x1968a16, "gpiod_direction_input" },
 	{ 0x96d4cdbc, "gpiod_direction_output_raw" },
 	{ 0x47229b5c, "gpio_request" },
@@ -56,4 +55,4 @@ __used __section("__versions") = {
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "4B9353DC9C70774D3085F95");
+MODULE_INFO(srcversion, "084BCEB8BBF17CA1BD48B4D");

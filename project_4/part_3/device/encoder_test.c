@@ -99,12 +99,12 @@ static int __init erpi_gpio_init(void)
     // setup encoder inputs
     gpio_request(enc_input1, "sysfs");       // set up enc_input1   
     gpio_direction_input(enc_input1);        // set up as input   
-    gpio_set_debounce(enc_input1, 5);      // debounce delay of 200ms
+    //gpio_set_debounce(enc_input1, 5);      // debounce delay of 200ms
     gpio_export(enc_input1, false);          // appears in /sys/class/gpio
 
     gpio_request(enc_input2, "sysfs");
     gpio_direction_input(enc_input2);
-    gpio_set_debounce(enc_input2, 5);
+    //gpio_set_debounce(enc_input2, 5);
     gpio_export(enc_input2, false);
 
     printk(KERN_INFO "Motor encoder: interrupt pin value is currently: %d\n", 
@@ -176,9 +176,10 @@ static ssize_t encoder_read(struct file *filep, char *buffer, size_t len, loff_t
     sprintf(message, "%i", counter);
     // copy_to_user has the format ( * to, *from, size) and returns 0 on success
     error_count = copy_to_user(buffer, message, sizeof(int));
-    counter = 0;
+    
     if (error_count==0){            // if true then have success
         //printk(KERN_INFO "motor_encoder: Sent %d characters to the user\n", sizeof(counter));
+        counter = 0;
         return 0;  // clear the position to the start and return 0
     }
     else {
