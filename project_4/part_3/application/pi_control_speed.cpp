@@ -97,7 +97,7 @@ int main(){
 
     // PI controller
     PI_Controller controller;
-    controller.init(1.8/140.0, 0.048, 0.006, 1.0);
+    controller.init(1.8/140.0, 0.048, measurement_interval/1000.0, 1.0);
     //Enable gpio22
     fd = open("/sys/class/gpio/export", O_WRONLY);
     write(fd, "22", 2);
