@@ -1,13 +1,13 @@
-OBJS = test_encoder.o
+OBJS = pi_control_speed.o
 
-all: test_encoder
+all: pi_control_speed
 
-test_encoder: $(OBJS)
-	g++ -o test_encoder $(OBJS) -l pthread 
+pi_control_speed: $(OBJS)
+	g++ -o pi_control_speed $(OBJS) -l pthread 
 
 %.o: src/%.cpp
 	g++ -o $@ -c $< -I include
 
 clean:
-	rm -f *.o test_encoder
+	rm -f *.o pi_control_speed
 	echo Clean done
