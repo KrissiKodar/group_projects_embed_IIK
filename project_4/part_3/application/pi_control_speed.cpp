@@ -75,8 +75,9 @@ int main(){
     int ret, fd;
     int encoder_count;
     int msec;
+
     int exit_counter = 0;
-    int end_program_check = 20;
+    int end_program_check = 30;
 
     float reference_speed;
     float speed = 0;
@@ -84,13 +85,12 @@ int main(){
     const int period = 6000;
     float duty_cycle = 0;
 
-    //int update_time;
-    //int measurement_time;
-    int exit_time;
-    //int update_interval = 6;
-    const float measurement_interval = 20;
+    // Print output
+    int print_time_counter = 0;
+    int print_every_x_msec = 500;
 
-    int last_count = 0;
+    const float measurement_interval = 20; //msec
+
 
     // timer (using relative timers not delay)
     struct timespec start, end;
@@ -168,7 +168,11 @@ int main(){
         msec = (end.tv_sec - start.tv_sec) * 1000 + (end.tv_nsec - start.tv_nsec) / 1000000;
         if (msec > measurement_interval)
         {
-            ret = read(fd, receive, sizeof(int));        // Read the response from the LKM
+            // Read the response from the LKM
+            // i.e. read the encoder counter from the LKM
+            // every time it is read the counter variable is reset to 0 inside the LKM
+            // for the speed measurement
+            ret = read(fd, receive, sizeof(int));
             if (ret < 0)
             {
                 perror("Failed to read the message from the device.");
@@ -176,15 +180,13 @@ int main(){
             }
             
             encoder_count = strtol(receive, nullptr, 10);
-            //printf("encoder_count = %i \n", encoder_count);
             speed = (((encoder_count/measurement_interval) * 1000.0) / 700.0) * 60.0;
             average_speed = average_speed + (speed - average_speed) / 10.0;
-            // print actual speed
+            // print speeds at update rate (hard to read!!!)
             // clear terminal after every print
-            //printf("\033[2J\033[1;1H");
-            // print the speed rounded to 2 decimal places
             //printf("Actual speed: %.2f \n", speed);
-            //speed = ((((encoder_count - last_count)/ measurement_interval) * 1000.0) / 700.0) * 60.0;
+            //printf("Average speed: %.2f \n", average_speed);
+            //printf("The duty cycle is %f \n", duty_cycle);
             duty_cycle = controller.update(reference_speed, speed);
             // CW
             if (duty_cycle < 0)
@@ -195,34 +197,24 @@ int main(){
             int set_duty_cycle = duty_cycle * period;
             sprintf(duty_cycle_to_PWM, "%i", set_duty_cycle);
             set_pwm(duty_cycle_to_PWM);
-
-            last_count = encoder_count;
            
-            exit_time += measurement_interval;
+            print_time_counter += measurement_interval;
             clock_gettime(CLOCK_MONOTONIC, &start);
         }
 
 
-        if(exit_time > 500)
+        if(print_time_counter > print_every_x_msec)
         {
-            /* printf("The received message is: [%s]\n", receive);
-            receive_int = strtol(receive, nullptr, 10);
-            printf("The counter value is: [%i]\n", receive_int); */
-            //int lol = duty_cycle * period;
-            //printf("The duty cycle is %f \n", duty_cycle);
-            //printf("set_duty_cycle = %i \n", lol);
-            // print duty_cycle_to_PWM
-            //printf("duty_cycle_to_PWM = %s \n", duty_cycle_to_PWM);
-            //printf("The actual speed is: [%i]\n", speed);
+            // clear terminal after every print
             printf("\033[2J\033[1;1H");
             printf("Actual speed: %.2f \n", speed);
             printf("Average speed: %.2f \n", average_speed);
             printf("The duty cycle is %f \n", duty_cycle);
             exit_counter++;
-            exit_time = 0;
+            print_time_counter = 0;
         }
 
-        // after en_program_time seconds exit and close the device
+        // When the exit counter is larger than the end program check, the program will exit (exit condition)
         if(exit_counter > end_program_check)
         {
             ret = close(fd);

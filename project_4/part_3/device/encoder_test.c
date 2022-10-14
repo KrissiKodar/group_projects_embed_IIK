@@ -12,7 +12,7 @@
 
 
 MODULE_LICENSE("GPL"); 
-MODULE_AUTHOR("Derek Molloy"); 
+MODULE_AUTHOR("Derek Molloy");  // most of the code is from Derek so his name stays here :)
 MODULE_DESCRIPTION("A Button/LED test driver for the RPi"); 
 MODULE_VERSION("0.1");
 
@@ -61,7 +61,7 @@ static int __init erpi_gpio_init(void)
     }   
 
 
-        // Try to dynamically allocate a major number for the device -- more difficult but worth it
+    // Try to dynamically allocate a major number for the device -- more difficult but worth it
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
     if (majorNumber<0){
         printk(KERN_ALERT "Motor encoder failed to register a major number\n");
@@ -147,6 +147,7 @@ static void __exit erpi_gpio_exit(void)
 }
 
 static int encoder_open(struct inode *inodep, struct file *filep){
+    // reset the counter when the device is opened
     counter = 0;
     return 0;
 }
@@ -157,6 +158,8 @@ static irq_handler_t erpi_gpio_irq_handler(unsigned int irq,
 {   
     ledOn = !ledOn;                          // toggle the LED state   
     gpio_set_value(gpioLED, ledOn);          // set LED accordingly  
+
+    // uncomment below this line to print the counter value to the log
     /* printk(KERN_INFO "Motor encoder: Interrupt! (counter is %d)\n", 
            counter); */
     current_input = gpio_get_value(enc_input2);
@@ -179,17 +182,22 @@ static ssize_t encoder_read(struct file *filep, char *buffer, size_t len, loff_t
     
     if (error_count==0){            // if true then have success
         //printk(KERN_INFO "motor_encoder: Sent %d characters to the user\n", sizeof(counter));
+        
+        // THE COUNTER IS RESET HERE FOR THE SPEED MEASUREMENT
+        // COMMENT OUT THE LINE BELOW TO GET THE TOTAL NUMBER OF ENCODER TICKS
         counter = 0;
+
         return 0;  // clear the position to the start and return 0
     }
     else {
-        //printk(KERN_INFO "motor_encoder: Failed to send %d characters to the user\n", error_count);
+        printk(KERN_INFO "motor_encoder: Failed to send %d characters to the user\n", error_count);
         return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
     }
 }
 
 
 static int encoder_release(struct inode *inodep, struct file *filep){
+    // reset the counter when the device is closed
     counter = 0;
     printk(KERN_INFO "Motor encoder: Device successfully closed\n");
     return 0;
