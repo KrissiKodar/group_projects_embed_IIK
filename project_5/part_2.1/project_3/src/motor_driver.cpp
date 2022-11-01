@@ -13,7 +13,9 @@ extern Timer2_msec timer2;
 
 void motor_driver(Controller* cont)
 {
-    duty_cycle = cont->update(reference_speed, speed);
+	// scale because register is unsigned:
+	int reference_speed_scaled = reference_speed - 140;
+    duty_cycle = cont->update(reference_speed_scaled, speed);
 	// CW
 	if (duty_cycle < 0)
 	{

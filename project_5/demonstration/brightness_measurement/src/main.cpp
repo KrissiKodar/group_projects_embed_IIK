@@ -12,9 +12,10 @@ uint16_t register_value;
 uint16_t total_to_read;
 
 const int sensorPin = 0;
-uint16_t lightVal = 0;
-//uint16_t& lightVal = reg[1];
-uint16_t& meanLightVal = reg[1];
+//int lightVal = 0;
+//int average_lightVal = 0;
+uint16_t& lightVal = reg[1];
+//uint16_t& meanLightVal = reg[1];
 
 void setup()
 {
@@ -26,7 +27,13 @@ void loop()
 {
   
   lightVal = analogRead(sensorPin);
-  meanLightVal = (meanLightVal + lightVal) / 10;
+  if (lightVal <= 0)
+  {
+    lightVal = 0;
+  }
+
+  //average_lightVal = (average_lightVal + lightVal) / 10;
+  //meanLightVal = average_lightVal;
   
   uint8_t buffer[100];        // stores the return buffer on each loop
   if (Serial.available() > 0) // bytes received

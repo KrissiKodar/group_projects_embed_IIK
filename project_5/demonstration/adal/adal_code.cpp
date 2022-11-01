@@ -30,10 +30,9 @@ public:
 			output = max_output;
 			sum_error -= error * integration_T;
 		}
-		else if (output <= 0)//-max_output)
+		else if (output <= -max_output)
 		{
-			output = 0;
-			//output = -max_output;
+			output = -max_output;
 			sum_error -= error * integration_T;
 		}
 		return output;
@@ -52,12 +51,12 @@ int main(int argc, char *argv[])
 {
 	int file, count;
 
-	int reference_speed = 0;
-	int reference_brightness = 100;
-	int brightness = 0;
+	uint16_t reference_speed = 0;
+	uint16_t reference_brightness = 700;
+	uint16_t brightness = 0;
 	PI_Controller controller;
-	controller.init(0.1, 0.1, 0.01, 140.0);
-	//uint16_t reg[2] = {0x0000, 0x0000};
+	controller.init(5.0, 0.01, 0.001, 140.0);
+	uint16_t reg[2] = {0x0000, 0x0000};
 
 	if ((file = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
 	{
@@ -101,19 +100,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	usleep(100000);
 
-	uint8_t receive[100];
-	// read the value from the first arduino
-	if ((count = read(file, (void *)receive, 100)) < 0)
-	{
-		perror("Failed to read from the input\n");
-		return -1;
-	}
-	else if (count == 0)
-	{
-		printf("There was no data available to read!\n");
-	}
+	usleep(100000);
 
 	while(true)
 	{	
@@ -137,9 +125,9 @@ int main(int argc, char *argv[])
 
 		usleep(100000);
 
-		uint8_t receive[100];
+		uint8_t receive_brightness[100];
 		// read the value from the first arduino
-		if ((count = read(file, (void *)receive, 100)) < 0)
+		if ((count = read(file, (void *)receive_brightness, 100)) < 0)
 		{
 			perror("Failed to read from the input\n");
 			return -1;
@@ -149,10 +137,12 @@ int main(int argc, char *argv[])
 			printf("There was no data available to read!\n");
 		}
 
-		brightness = (receive[3] << 8) | receive[4];
+		brightness = (receive_brightness[3] << 8) | receive_brightness[4];
 		printf("Brightness: %d\n", brightness);
 
 		reference_speed = controller.update(reference_brightness, brightness);
+		printf("Reference speed: %d\n", reference_speed);
+		printf("Size of int: %d bytes \n", sizeof(int));
 
 		msg[0] = 1;
 		msg[1] = 6;
@@ -161,7 +151,7 @@ int main(int argc, char *argv[])
 		msg[2] = (register_address >> 8) & 0xFF;
 		msg[3] = register_address & 0xFF;
 
-		register_value = reference_speed;
+		register_value = reference_speed + 140;
 		msg[4] = (register_value >> 8) & 0xFF;
 		msg[5] = register_value & 0xFF;
 
@@ -171,6 +161,7 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 
+		usleep(100000);
 
 	}
 
