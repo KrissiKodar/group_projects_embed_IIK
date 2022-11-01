@@ -7,7 +7,7 @@
 #include <cstdlib>	// atoi()
 #include <pthread.h>
 
-class PI_Controller: public Controller
+class PI_Controller
 {
 public:
     void init(float Kp, float Ti, float integration_T, float max_output)
