@@ -7,11 +7,11 @@
 #include <cstdlib>	// atoi()
 #include <pthread.h>
 
-int main(char *argv[])
+int main(int argc, char *argv[])
 {
 	int file, count;
 
-	uint16_t reg[2] = {0x0000, 0x0000};
+	//uint16_t reg[2] = {0x0000, 0x0000};
 
 	if ((file = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
 	{

@@ -7,7 +7,7 @@
 #include <cstdlib>  // atoi()
 #include <pthread.h>
 
-int main(char *argv[])
+int main(int argc, char *argv[])
 {
     int file, count;
 
