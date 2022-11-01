@@ -10,8 +10,34 @@
 class PI_Controller: public Controller
 {
 public:
-    void init(float Kp, float Ti, float integration_T, float max_output);
-    float update(float ref, float actual);
+    void init(float Kp, float Ti, float integration_T, float max_output)
+	{
+		this->Kp = Kp;
+		this->Ti = Ti;
+		this->integration_T = integration_T;
+		this->max_output = max_output;
+		sum_error = 0;
+	}
+    float update(float ref, float actual)
+	{
+		error = ref - actual;
+		sum_error += error * integration_T;
+		output =  Kp * (error + sum_error/Ti);
+		// if output is saturated, do not integrate
+		// output is saturated if it is smaller than -1 or larger than 1
+		if (output >= max_output)
+		{
+			output = max_output;
+			sum_error -= error * integration_T;
+		}
+		else if (output <= 0)//-max_output)
+		{
+			output = 0;
+			//output = -max_output;
+			sum_error -= error * integration_T;
+		}
+		return output;
+	}
 private:
     float error;
     float Kp;
@@ -21,37 +47,6 @@ private:
     float sum_error = 0;
     float output = 0;
 };
-
-void PI_Controller::init(float Kp, float Ti, float integration_T, float max_output)
-{
-    this->Kp = Kp;
-    this->Ti = Ti;
-    this->integration_T = integration_T;
-    this->max_output = max_output;
-    sum_error = 0;
-}
-
-float PI_Controller::update(float ref, float actual)
-{
-    error = ref - actual;
-    sum_error += error * integration_T;
-    output =  Kp * (error + sum_error/Ti);
-    // if output is saturated, do not integrate
-    // output is saturated if it is smaller than -1 or larger than 1
-    if (output >= max_output)
-    {
-        output = max_output;
-        sum_error -= error * integration_T;
-    }
-    else if (output <= 0)//-max_output)
-    {
-		output = 0;
-        //output = -max_output;
-        sum_error -= error * integration_T;
-    }
-    return output;
-}
-
 
 int main(int argc, char *argv[])
 {
