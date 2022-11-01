@@ -31,7 +31,7 @@ void stopped_state::on_entry()
   (*chosen_controller).brake();
   cont = false;
   led_freq = 2;
-  Serial.println("/////////// Motor is in stopped mode /////////// ");
+  //Serial.println("/////////// Motor is in stopped mode /////////// ");
   /* // print speed_array to serial in a python list format
   Serial.print("[");
   for (int i = 0; i < 200; i++)
@@ -54,19 +54,19 @@ void stopped_state::on_exit()
 
 void stopped_state::on_set_operational()
 {
-  Serial.println("I received set operational command");
+  //Serial.println("I received set operational command");
   this->context_->transition_to(new operational_state);
 }
 
 void stopped_state::on_set_preoperational()
 {
-  Serial.println("I received set operational command");
+  //Serial.println("I received set operational command");
   this->context_->transition_to(new preoperational_state);
 }
 
 void stopped_state::on_reset()
 {
-  Serial.println("I received a reset command");
+  //Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
 }
 

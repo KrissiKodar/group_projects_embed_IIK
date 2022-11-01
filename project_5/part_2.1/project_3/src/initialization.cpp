@@ -39,9 +39,9 @@ void initialization_state::on_do()
 
 void initialization_state::on_entry()
 {
-  Serial.println("Initializing motor");
-  // enable interrupts
-  led.init();
+	//Serial.println("Initializing motor");
+	// enable interrupts
+	led.init();
 	/////////// for encoder /////////////
 	encoder_input1.init();
 	encoder_input2.init();
@@ -59,11 +59,11 @@ void initialization_state::on_entry()
 	timer1.init(constants::interval);// MILLISEC (max 4194.304 millisec)
 	timer2.init(1500, 0.0); // MICROSEC (max 16384 microsec)
 
-  sei();
-  //delay(2000);
-  // when the timer expires, transition to red
-  Serial.println("Motor initialized, ready to receive commands.");
-  this->context_->transition_to(new preoperational_state);
+	sei();
+	//delay(2000);
+	// when the timer expires, transition to red
+	//Serial.println("Motor initialized, ready to receive commands.");
+	this->context_->transition_to(new preoperational_state);
 }
 
 void initialization_state::on_exit()

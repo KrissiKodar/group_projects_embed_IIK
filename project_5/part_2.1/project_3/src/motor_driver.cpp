@@ -3,8 +3,10 @@
 #include "timer2_msec.h"
 
 extern float duty_cycle;
-extern float speed;
-extern float reference_speed;
+//extern float speed;
+//extern float reference_speed;
+extern int& speed;
+extern int& reference_speed;
 extern Digital_out in_1;
 extern Digital_out in_2;
 extern Timer2_msec timer2;

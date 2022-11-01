@@ -20,7 +20,6 @@ extern Controller* chosen_controller;
 extern int timer1_int_count;
 extern uint8_t led_freq;
 extern bool cont;
-extern float reference_speed;
 extern float P;
 extern float Ti;
 
@@ -32,13 +31,15 @@ void preoperational_state::on_do()
 void preoperational_state::on_entry()
 {
 
-  Serial.println("/////////// Configuration /////////// ");
+  //Serial.println("/////////// Configuration /////////// ");
   // read in input from serial
   // set the input as the value for the P controller
-  int8_t command = 0;
+  //int8_t command = 0;
   cont = false;
   led_freq = 1; // Hz
-  while (Serial.available() == 0)
+  pi_controller.init(P, Ti, constants::integration_T, constants::max_output);
+  chosen_controller = &pi_controller;
+  /* while (Serial.available() == 0)
   {
     Serial.println("Enter reference speed: ");
     reference_speed = Serial.parseFloat();
@@ -63,7 +64,7 @@ void preoperational_state::on_entry()
       chosen_controller = &pi_controller;
     }
   }
-  Serial.println("//////////////////////////////////// ");
+  Serial.println("//////////////////////////////////// "); */
 }
 
 void preoperational_state::on_exit()
@@ -73,24 +74,24 @@ void preoperational_state::on_exit()
 
 void preoperational_state::on_set_operational()
 {
-  Serial.println("I received set operational command");
+  //Serial.println("I received set operational command");
   this->context_->transition_to(new operational_state);
 }
 
 void preoperational_state::on_set_preoperational()
 {
-  Serial.println("I received set preoperational command");
+  //Serial.println("I received set preoperational command");
   this->context_->transition_to(new preoperational_state);
 }
 
 void preoperational_state::on_reset()
 {
-  Serial.println("I received a reset command");
+  //Serial.println("I received a reset command");
   this->context_->transition_to(new initialization_state);
 }
 
 void preoperational_state::on_stop()
 {
-  Serial.println("I received a stop command");
+  //Serial.println("I received a stop command");
   this->context_->transition_to(new stopped_state);
 }
