@@ -47,15 +47,28 @@ private:
     float output = 0;
 };
 
+
+// int round(int n)
+// {
+//     // Smaller multiple
+//     int a = (n / 10) * 10;
+     
+//     // Larger multiple
+//     int b = a + 10;
+ 
+//     // Return of closest of two
+//     return (n - a > b - n)? b : a;
+// }
+
 int main(int argc, char *argv[])
 {
 	int file, count;
 
 	uint16_t reference_speed = 0;
-	uint16_t reference_brightness = 700;
+	uint16_t reference_brightness = 400;
 	uint16_t brightness = 0;
 	PI_Controller controller;
-	controller.init(5.0, 0.01, 0.001, 140.0);
+	controller.init(0.10, 0.001, 0.0001, 140.0);
 	uint16_t reg[2] = {0x0000, 0x0000};
 
 	if ((file = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
@@ -86,6 +99,7 @@ int main(int argc, char *argv[])
 	msg[1] = 6;
 
 	uint16_t register_address = 0;
+	uint8_t receive_brightness[100];
 	msg[2] = (register_address >> 8) & 0xFF;
 	msg[3] = register_address & 0xFF;
 
@@ -101,7 +115,10 @@ int main(int argc, char *argv[])
 	}
 
 
-	usleep(100000);
+	usleep(10000);
+
+	int k = 0;
+
 
 	while(true)
 	{	
@@ -123,9 +140,9 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 
-		usleep(100000);
+		usleep(20000);
 
-		uint8_t receive_brightness[100];
+		// uint8_t receive_brightness[100];
 		// read the value from the first arduino
 		if ((count = read(file, (void *)receive_brightness, 100)) < 0)
 		{
@@ -138,11 +155,19 @@ int main(int argc, char *argv[])
 		}
 
 		brightness = (receive_brightness[3] << 8) | receive_brightness[4];
-		printf("Brightness: %d\n", brightness);
+		
 
-		reference_speed = controller.update(reference_brightness, brightness);
-		printf("Reference speed: %d\n", reference_speed);
-		printf("Size of int: %d bytes \n", sizeof(int));
+		int prent = controller.update(reference_brightness, brightness);
+		// prent = round(prent); //til að minnka flokt
+		reference_speed = (prent * 2.0 / 7.0) + 100 +140;
+		
+		if  ((k%10) == 0)
+		{printf("prent: %d\n", prent);
+		printf("ref speed %d\n", reference_speed-140);
+		printf("Brightness: %d\n", brightness);
+		printf("k: %d  \n", k);
+		k=0;
+		}
 
 		msg[0] = 1;
 		msg[1] = 6;
@@ -151,7 +176,7 @@ int main(int argc, char *argv[])
 		msg[2] = (register_address >> 8) & 0xFF;
 		msg[3] = register_address & 0xFF;
 
-		register_value = reference_speed + 140;
+		register_value = reference_speed;
 		msg[4] = (register_value >> 8) & 0xFF;
 		msg[5] = register_value & 0xFF;
 
@@ -161,8 +186,8 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 
-		usleep(100000);
-
+		usleep(10000);
+		k++;
 	}
 
 	close(file);

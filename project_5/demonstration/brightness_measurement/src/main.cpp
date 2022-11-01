@@ -3,7 +3,7 @@
 const size_t MSG_LEN = 6;
 uint8_t msg[MSG_LEN];
 
-uint16_t reg[2] = {0, 0}; // commands, brightness, mean_brightness
+uint16_t reg[3] = {0, 0, 10}; // commands, mean_brightness, avg_n
 
 uint8_t server_address;
 uint8_t function_code;
@@ -14,8 +14,13 @@ uint16_t total_to_read;
 const int sensorPin = 0;
 //int lightVal = 0;
 //int average_lightVal = 0;
-uint16_t& lightVal = reg[1];
-//uint16_t& meanLightVal = reg[1];
+//uint16_t& lightVal = reg[1];
+
+uint16_t lightVal = 0;
+uint16_t last_lightVal = 0;
+
+uint16_t& meanLightVal = reg[1];
+uint16_t& avg_n = reg[2];
 
 void setup()
 {
@@ -32,8 +37,7 @@ void loop()
     lightVal = 0;
   }
 
-  //average_lightVal = (average_lightVal + lightVal) / 10;
-  //meanLightVal = average_lightVal;
+  meanLightVal = (meanLightVal * avg_n + lightVal) / (avg_n + 1);
   
   uint8_t buffer[100];        // stores the return buffer on each loop
   if (Serial.available() > 0) // bytes received
