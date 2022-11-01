@@ -88,16 +88,48 @@ int main(int argc, char *argv[])
 	// get measurement from one and value to set on the other
 	// modbus message format
 
+	msg[0] = 1;
+	msg[1] = 6;
+
+	uint16_t register_address = 0;
+	msg[2] = (register_address >> 8) & 0xFF;
+	msg[3] = register_address & 0xFF;
+
+	uint16_t register_value = 1;
+	msg[4] = (register_value >> 8) & 0xFF;
+	msg[5] = register_value & 0xFF;
+
+	// send the fixed length message
+	if ((count = write(file, msg, MSG_LEN)) < 0)
+	{
+		perror("Failed to write to the output\n");
+		return -1;
+	}
+
+	usleep(100000);
+
+	uint8_t receive[100];
+	// read the value from the first arduino
+	if ((count = read(file, (void *)receive, 100)) < 0)
+	{
+		perror("Failed to read from the input\n");
+		return -1;
+	}
+	else if (count == 0)
+	{
+		printf("There was no data available to read!\n");
+	}
+
 	while(true)
 	{	
 		msg[0] = 2;
 		msg[1] = 3;
 
-		uint16_t register_address = 1;
+		register_address = 1;
 		msg[2] = (register_address >> 8) & 0xFF;
 		msg[3] = register_address & 0xFF;
 
-		uint16_t register_value = 1;
+		register_value = 1;
 		msg[4] = (register_value >> 8) & 0xFF;
 		msg[5] = register_value & 0xFF;
 
