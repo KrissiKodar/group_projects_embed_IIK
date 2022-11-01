@@ -48,7 +48,7 @@ int &command = reg[0];
 
 int &speed = reg[1];
 
-int &reference_speed = reg[1];
+int &reference_speed = reg[2];
 
 int last_command = 0;
 
