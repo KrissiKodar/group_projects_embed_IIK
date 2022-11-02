@@ -16,7 +16,7 @@ void motor_driver(Controller* cont)
 	// scale because register is unsigned
 	// refrence speed comes from the register on the interval [0,280]
 	// but the actual speed is on the interval [-140,140]
-	int reference_speed_scaled = reference_speed - 140;
+	float reference_speed_scaled = reference_speed - 140;
     duty_cycle = cont->update(reference_speed_scaled, speed);
 	// CW
 	if (duty_cycle < 0)

@@ -59,7 +59,7 @@ float duty_cycle = 0.0;
 float speed = 0.0;
 float error = 0.0;
 float P = 1.8 / constants::max_speed;
-float Ti = 0.0048;
+float Ti = 0.048;
 
 uint8_t led_freq = 1;
 bool cont = false;
@@ -137,6 +137,7 @@ void loop()
 			case 3: // READ
 				// register address of the first register to read
 				// turn two bytes into a 16-bit integer
+				//speed_reg = speed + 140;
 				register_address = (msg[2] << 8) | msg[3];
 				total_to_read = (msg[4] << 8) | msg[5];
 				buffer[0] = server_address;
@@ -182,7 +183,6 @@ ISR(TIMER1_COMPA_vect)
 
 	// calculate the speed
 	speed = (((enc.get_counter() / constants::interval) * 1000.0) / 1400.0) * 60.0;
-	speed_reg = speed;
 
 	enc.reset_counter();
 

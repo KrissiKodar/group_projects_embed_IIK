@@ -3,7 +3,7 @@
 const size_t MSG_LEN = 6;
 uint8_t msg[MSG_LEN];
 
-uint16_t reg[3] = {0, 0, 10}; // commands, mean_brightness, avg_n
+uint16_t reg[2] = {0, 0}; // commands, lightval
 
 uint8_t server_address;
 uint8_t function_code;
@@ -11,33 +11,32 @@ uint16_t register_address;
 uint16_t register_value;
 uint16_t total_to_read;
 
-const int sensorPin = 0;
+const int sensorPin = A0;
 //int lightVal = 0;
 //int average_lightVal = 0;
-//uint16_t& lightVal = reg[1];
+int read = 0;
+uint16_t& light_val = reg[1];
 
-uint16_t lightVal = 0;
 uint16_t last_lightVal = 0;
 
-uint16_t& meanLightVal = reg[1];
-uint16_t& avg_n = reg[2];
 
 void setup()
 {
   // A baud rate of 115200 (8-bit with No parity and 1 stop bit)
-  Serial.begin(115200, SERIAL_8N1);
+  Serial.begin(115200);
 }
 
 void loop()
 {
   
-  lightVal = analogRead(sensorPin);
-  if (lightVal <= 0)
+  read = analogRead(sensorPin);
+
+  if (read <= 0)
   {
-    lightVal = 0;
+    read = 0;
   }
 
-  meanLightVal = (meanLightVal * avg_n + lightVal) / (avg_n + 1);
+  light_val = read;
   
   uint8_t buffer[100];        // stores the return buffer on each loop
   if (Serial.available() > 0) // bytes received

@@ -35,15 +35,6 @@ extern int& reference_speed;
 
 void operational_state::on_do()
 {
-  if ((timer1_int_count_2 % 1000) == 0)
-	{
-		// print out the reference speed and the actual speed in RPM
-   /*  Serial.println("Reference speed: " + String(reference_speed) + " RPM");
-    Serial.println("Actual speed: " + String(speed) + " RPM");
-    Serial.println("Duty cycle: " + String(abs(duty_cycle))); */
-		timer1_int_count_2 = constants::interval;
-	}
-
   if ((update_time % 2) == 1)
   {
     motor_driver(chosen_controller);
