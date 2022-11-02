@@ -46,7 +46,7 @@ uint16_t total_to_read;
 
 int &command = reg[0];
 
-int &speed = reg[1];
+int &speed_reg = reg[1];
 
 int &reference_speed = reg[2];
 
@@ -56,7 +56,7 @@ int timer1_int_count = 0;
 uint16_t timer1_int_count_2 = 0;
 uint8_t update_time = 0.0;
 float duty_cycle = 0.0;
-
+float speed = 0.0;
 float error = 0.0;
 float P = 1.8 / constants::max_speed;
 float Ti = 0.0048;
@@ -182,6 +182,7 @@ ISR(TIMER1_COMPA_vect)
 
 	// calculate the speed
 	speed = (((enc.get_counter() / constants::interval) * 1000.0) / 1400.0) * 60.0;
+	speed_reg = speed;
 
 	enc.reset_counter();
 

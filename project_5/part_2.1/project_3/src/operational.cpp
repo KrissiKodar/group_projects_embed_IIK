@@ -28,7 +28,7 @@ extern float P;
 extern float Ti;
 //extern float speed;
 extern float duty_cycle;
-extern int& speed;
+extern float speed;
 extern int& reference_speed;
 
 //extern bool start;
