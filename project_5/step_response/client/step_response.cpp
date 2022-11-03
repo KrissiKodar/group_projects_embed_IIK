@@ -103,6 +103,11 @@ int main(int argc, char *argv[])
 	uint16_t register_address = 0;
 	uint8_t receive_brightness[100];
 	uint8_t receive_motor[100];
+
+
+    // array for storing mesured speed
+    uint16_t brightness_array[1000];
+
 	msg_motor[2] = (register_address >> 8) & 0xFF;
 	msg_motor[3] = register_address & 0xFF;
 
@@ -122,7 +127,7 @@ int main(int argc, char *argv[])
 
 	int k = 0;
 	
-
+    
 	while(true)
 	{	
 		msg_brightness[0] = 2;
@@ -205,8 +210,21 @@ int main(int argc, char *argv[])
 		{
 			printf("There was no data available to read!\n");
 		}
+
+        brightness_array[k] = brightness;
 		k++;
+        if (k == 1000)
+        {
+            break;
+        }
 	}
+
+    printf("[");
+    for (int i = 0; i < 1000; i++)
+    {
+        printf("%d, ", brightness_array[i]);
+    }
+    printf("]");
 
 	close(file);
 
