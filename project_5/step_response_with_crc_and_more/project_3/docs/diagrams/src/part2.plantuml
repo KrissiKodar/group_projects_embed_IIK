@@ -1,0 +1,32 @@
+@startuml part2
+'state diagram
+' make 4 states
+
+state Initialization #LightBlue
+state PreOperational #Yellow
+state Operational #Green
+state Stopped #Red
+
+[*] --> Initialization
+Initialization : on entry: Initialize everything
+Initialization : automatically go to PreOperational
+Initialization --> PreOperational : AutoStart
+PreOperational --> Operational : keypress o
+PreOperational --> Initialization : keypress r
+PreOperational --> Stopped : keypress s
+PreOperational : on entry: LED blink 1 Hz
+PreOperational : on do: do nothing
+Operational --> Stopped : keypress s
+Operational --> Initialization : keypress r
+Operational --> PreOperational : keypress p
+Operational : on entry: LED on continuously
+Operational : on do: do nothing
+Stopped --> PreOperational : keypress p
+Stopped --> Initialization : keypress r
+Stopped --> Operational : keypress o
+Stopped : on entry: LED blink 2 Hz
+Stopped : on entry: Call brake(), stop motor
+Stopped : on do: do nothing
+
+
+@enduml
