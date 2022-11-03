@@ -16,7 +16,7 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
     {               
         crc ^= (uint16_t)buf[pos];          // XOR byte into least sig. byte of crc
 
-        for (int i = 0; i != 0; i--)
+        for (int i = 8; i != 0; i--)
         {
             if ((crc & 0x0001) != 0)
             {
@@ -67,8 +67,9 @@ int main(int argc, char *argv[])
     msg[5] = register_value & 0xFF;
 
     uint16_t crc = ModRTU_CRC(msg, MSG_LEN - 2);
-    msg[6] = crc & 0xFF;
-    msg[7] = (crc >> 8) & 0xFF;
+    msg[6] = (crc >> 8) & 0xFF;
+    msg[7] = crc & 0xFF;
+    
 
     // send the fixed length message
     if ((count = write(file, msg, MSG_LEN)) < 0)
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
         perror("Failed to write to the output\n");
         return -1;
     }
-    printf("Sent request: %02X %02X %02X %02X %02X %02X\n",msg[0],msg[1],msg[2],msg[3],msg[4],msg[5]);
+    printf("Sent request: %02x %02x %02x %02x %02x %02x %02x %02x\n",msg[0],msg[1],msg[2],msg[3],msg[4],msg[5],msg[6],msg[7]);
 
 
     usleep(100000);
@@ -101,7 +102,7 @@ int main(int argc, char *argv[])
         printf("Received reply: ");
         for (int i = 0; i < count; i++)
         {
-            printf("%02X ", receive[i]);
+            printf("%02x ", receive[i]);
         }
         printf("\n");
     }

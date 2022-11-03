@@ -11,6 +11,10 @@ uint16_t register_address;
 uint16_t register_value;
 uint16_t total_to_read;
 
+uint16_t crc_received; 
+uint16_t crc_calculated;
+uint16_t crc_send;
+
 const unsigned char CMD_LED = 0x02;
 
 int ledPin = 11; // LED with PWM brightness control
@@ -23,7 +27,7 @@ uint16_t ModRTU_CRC(uint8_t buf[], int len)
     {               
         crc ^= (uint16_t)buf[pos];          // XOR byte into least sig. byte of crc
 
-        for (int i = 0; i != 0; i--)
+        for (int i = 8; i != 0; i--)
         {
             if ((crc & 0x0001) != 0)
             {
@@ -52,15 +56,15 @@ void loop()
     Serial.readBytes(msg, MSG_LEN); // binary messages have fixed length and no terminating \0.
     // check the CRC
     // if CRC does not match, discard the message
-    uint16_t crc_received = (msg[MSG_LEN - 2] << 8) | msg[MSG_LEN - 1];
-    uint16_t crc_calculated = ModRTU_CRC(msg, MSG_LEN - 2);
+    crc_received = (msg[MSG_LEN - 2] << 8) | msg[MSG_LEN - 1];
+    crc_calculated = ModRTU_CRC(msg, MSG_LEN - 2);
+    // crc_received does not match crc_calculated send no response
     if (crc_received != crc_calculated)
     {
-      break;
+      return;
     }
     server_address = msg[0];
     function_code = msg[1];
-    
     if (server_address == 1)
     {
       switch (function_code)
@@ -69,12 +73,23 @@ void loop()
           // turn two bytes into a 16-bit integer
           register_address = (msg[2] << 8) | msg[3];
           register_value = (msg[4] << 8) | msg[5];
+          
+          // write to register
           reg[register_address] = register_value;
-          memcpy(buffer, msg, MSG_LEN-2);
+          
+          buffer[0] = server_address;
+          buffer[1] = function_code;
+          buffer[2] = msg[2];
+          buffer[3] = msg[3];
+          buffer[4] = msg[4];
+          buffer[5] = msg[5];
+
           // calculate the CRC
-          uint16_t crc_send = ModRTU_CRC(buffer, MSG_LEN-2);
-          buffer[MSG_LEN-2] = crc_send & 0xFF;
-          buffer[MSG_LEN-1] = (crc_send >> 8) & 0xFF;
+          crc_send = ModRTU_CRC(buffer, MSG_LEN-2);
+          buffer[MSG_LEN-2] = (crc_send >> 8) & 0xFF;
+          buffer[MSG_LEN-1] = crc_send & 0xFF;
+          
+
           Serial.write(buffer, MSG_LEN);
           break;
         case 3: // READ
@@ -93,14 +108,15 @@ void loop()
             buffer[4 + i * 2] = reg[register_address + i] & 0xFF;
           }
           // calculate the CRC
-          uint16_t crc_send = ModRTU_CRC(buffer, 3 + total_to_read * 2);
-          buffer[3 + total_to_read * 2] = crc_send & 0xFF;
-          buffer[4 + total_to_read * 2] = (crc_send >> 8) & 0xFF;
+          crc_send = ModRTU_CRC(buffer, 3 + total_to_read * 2);
+          buffer[3 + total_to_read * 2] = (crc_send >> 8) & 0xFF;
+          buffer[4 + total_to_read * 2] = crc_send & 0xFF;
           // send the buffer back to the client
           Serial.write(buffer, 5 + total_to_read * 2);
         default:
           break;
       } 
     }
+
   }
 }
