@@ -7,11 +7,33 @@
 #include <cstdlib>  // atoi()
 #include <pthread.h>
 
+
+uint16_t ModRTU_CRC(uint8_t buf[], int len)
+{
+    uint16_t crc = 0xFFFF;
+
+    for (int pos = 0; pos < len; pos++)
+    {               
+        crc ^= (uint16_t)buf[pos];          // XOR byte into least sig. byte of crc
+
+        for (int i = 0; i != 0; i--)
+        {
+            if ((crc & 0x0001) != 0)
+            {
+                crc >>= 1;
+                crc ^= 0xA001;
+            }
+            else
+                crc >>= 1;
+        }
+    }
+    return crc;
+}
+
+
 int main(int argc, char *argv[])
 {
     int file, count;
-
-    uint16_t reg[2] = {0x0000, 0x0000};
 
     if ((file = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
     {
@@ -29,7 +51,7 @@ int main(int argc, char *argv[])
     tcflush(file, TCIFLUSH);
     tcsetattr(file, TCSANOW, &options);
 
-    const size_t MSG_LEN = 6;
+    const size_t MSG_LEN = 8;
     uint8_t msg[MSG_LEN];
 
     // populate the message with integer values in binary format
@@ -43,6 +65,10 @@ int main(int argc, char *argv[])
     uint16_t register_value = atoi(argv[4]);
     msg[4] = (register_value >> 8) & 0xFF;
     msg[5] = register_value & 0xFF;
+
+    uint16_t crc = ModRTU_CRC(msg, MSG_LEN - 2);
+    msg[6] = crc & 0xFF;
+    msg[7] = (crc >> 8) & 0xFF;
 
     // send the fixed length message
     if ((count = write(file, msg, MSG_LEN)) < 0)
@@ -66,7 +92,11 @@ int main(int argc, char *argv[])
     {
         printf("There was no data available to read!\n");
     }
-    else
+
+    // check if CRC in received message is correct
+    uint16_t crc_received = (receive[count - 2] << 8) | receive[count - 1];
+    uint16_t crc_calculated = ModRTU_CRC(receive, count - 2);
+    if (crc_received == crc_calculated)
     {
         printf("Received reply: ");
         for (int i = 0; i < count; i++)
@@ -75,6 +105,7 @@ int main(int argc, char *argv[])
         }
         printf("\n");
     }
+    
 
     close(file);
 
