@@ -4,6 +4,7 @@ const size_t MSG_LEN = 8;
 uint8_t msg[MSG_LEN];
 
 uint16_t reg[2] = {64, 511};
+const size_t REG_LEN = sizeof(reg) /sizeof(reg[0]);
 
 uint8_t server_address;
 uint8_t function_code;
@@ -72,6 +73,20 @@ void loop()
         case 6: // WRITE
           // turn two bytes into a 16-bit integer
           register_address = (msg[2] << 8) | msg[3];
+
+          // if illegal register address, send exception response
+          if (register_address > REG_LEN)
+          {
+            buffer[0] = server_address;
+            buffer[1] = function_code + 0x80;
+            buffer[2] = 0x02;
+            crc_send = ModRTU_CRC(buffer, 3);
+            buffer[3] = (crc_send >> 8) & 0xFF;
+            buffer[4] = crc_send & 0xFF;
+            Serial.write(buffer, 5);
+            return;
+          }
+
           register_value = (msg[4] << 8) | msg[5];
           
           // write to register
@@ -97,6 +112,19 @@ void loop()
           // turn two bytes into a 16-bit integer
           register_address = (msg[2] << 8) | msg[3];
           total_to_read = (msg[4] << 8) | msg[5];
+
+          // if illegal register address, send exception response
+          if (register_address + total_to_read > REG_LEN)
+          {
+            buffer[0] = server_address;
+            buffer[1] = function_code + 0x80;
+            buffer[2] = 0x02;
+            crc_send = ModRTU_CRC(buffer, 3);
+            buffer[3] = (crc_send >> 8) & 0xFF;
+            buffer[4] = crc_send & 0xFF;
+            Serial.write(buffer, 5);
+            return;
+          }
           buffer[0] = server_address;
           buffer[1] = function_code;
           buffer[2] = total_to_read * 2;
@@ -113,7 +141,18 @@ void loop()
           buffer[4 + total_to_read * 2] = crc_send & 0xFF;
           // send the buffer back to the client
           Serial.write(buffer, 5 + total_to_read * 2);
+          break;
         default:
+          // illegal function code
+          buffer[0] = server_address;
+          buffer[1] = function_code | 0x80;
+          buffer[2] = 0x01; //exception code 0x01
+          // calculate the CRC
+          crc_send = ModRTU_CRC(buffer, 3);
+          buffer[3] = (crc_send >> 8) & 0xFF;
+          buffer[4] = crc_send & 0xFF;
+          // send the buffer back to the client
+          Serial.write(buffer, 5);
           break;
       } 
     }
