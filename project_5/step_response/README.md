@@ -1,3 +1,3 @@
-# Group projects for embedded systems 
+# Step response
 
-Students: Ignas, Íris, Kristján
+This code was used for plotting the step response of the system before CRC, exceptions and errors were added to the communications.
