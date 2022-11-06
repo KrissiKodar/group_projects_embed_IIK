@@ -113,7 +113,6 @@ int main(int argc, char *argv[])
     uint8_t receive_brightness[100];
     uint8_t receive_motor[100];
 
-
     msg_motor[2] = (register_address >> 8) & 0xFF;
     msg_motor[3] = register_address & 0xFF;
 
@@ -136,9 +135,11 @@ int main(int argc, char *argv[])
 
     int k = 0;
     int j = 0;
-    int check = 100;
+    int num_measurements = 100;
+    int every_n_samples = 10;
     // store measured values
-	uint16_t brightness_array[check];
+    uint16_t ref_speed_array[num_measurements];
+    uint16_t brightness_array[num_measurements];
 
     while (true)
     {
@@ -157,16 +158,17 @@ int main(int argc, char *argv[])
         msg_brightness[6] = (crc >> 8) & 0xFF;
         msg_brightness[7] = crc & 0xFF;
 
-        if (k % 10 == 0)
+        if (k % every_n_samples == 0)
         {
-            printf("ref speed %d\n", reference_speed-140);
+            printf("ref speed %d\n", reference_speed - 140);
             printf("brightness %d\n", mean_brightness);
             brightness_array[j] = mean_brightness;
+            ref_speed_array[j] = reference_speed - 140;
             j++;
         }
 
         k++;
-        if (k >= check*10)
+        if (k >= num_measurements * every_n_samples)
         {
             break;
         }
@@ -180,8 +182,7 @@ int main(int argc, char *argv[])
 
         usleep(100000);
 
-        // uint8_t receive_brightness[100];
-        // read the value from the first arduino
+        // read the value from the arduino 1
         if ((count = read(file, (void *)receive_brightness, 100)) < 0)
         {
             perror("Failed to read from the input\n");
@@ -201,8 +202,10 @@ int main(int argc, char *argv[])
             mean_brightness = mean_brightness + (brightness - mean_brightness) / 20;
 
             control_signal = controller.update(reference_brightness, mean_brightness);
-            // prent = round(prent); //til að minnka flokt
-            // reference_speed = (prent * 2.0 / 7.0) + 100 + 140;
+
+            // control signal is scaled from [-140,140] to [5,140] (then +140)
+            // because for the brightness control it doesnt make sense to
+            // completely stop the disk or go in reverse
             reference_speed = (control_signal * 0.482) + 72.5 + 140;
 
             msg_motor[0] = 1;
@@ -220,6 +223,7 @@ int main(int argc, char *argv[])
             msg_motor[6] = (crc >> 8) & 0xFF;
             msg_motor[7] = crc & 0xFF;
 
+            // send reference speed to arduino 2
             if ((count = write(file, msg_motor, MSG_LEN)) < 0)
             {
                 perror("Failed to write to the output\n");
@@ -244,16 +248,24 @@ int main(int argc, char *argv[])
             {
                 printf("CRC error\n");
             }
+        }
+
+        printf("[");
+        for (int i = 0; i < num_measurements * every_n_samples; i++)
+        {
+            printf("%d, ", brightness_array[i]);
+        }
+        printf("]");
+        printf("\n");
+        printf("[");
+        for (int i = 0; i < num_measurements * every_n_samples; i++)
+        {
+            printf("%d, ", ref_speed_array[i]);
+        }
+        printf("]");
+
+        close(file);
+
+        return 0;
     }
-
-    printf("[");
-    for (int i = 0; i < 1000; i++)
-    {
-        printf("%d, ", brightness_array[i]);
-    }
-    printf("]");
-
-    close(file);
-
-    return 0;
 }

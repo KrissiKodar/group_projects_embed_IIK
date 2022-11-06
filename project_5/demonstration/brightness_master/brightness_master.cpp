@@ -10,7 +10,7 @@
 class PI_Controller
 {
 public:
-    void init(float Kp, float Ti, float integration_T, float max_output)
+	void init(float Kp, float Ti, float integration_T, float max_output)
 	{
 		this->Kp = Kp;
 		this->Ti = Ti;
@@ -18,11 +18,11 @@ public:
 		this->max_output = max_output;
 		sum_error = 0;
 	}
-    float update(float ref, float actual)
+	float update(float ref, float actual)
 	{
 		error = ref - actual;
 		sum_error += error * integration_T;
-		output =  Kp * (error + sum_error/Ti);
+		output = Kp * (error + sum_error / Ti);
 		// if output is saturated, do not integrate
 		// output is saturated if it is smaller than -1 or larger than 1
 		if (output >= max_output)
@@ -37,25 +37,25 @@ public:
 		}
 		return output;
 	}
-private:
-    float error;
-    float Kp;
-    float Ti;
-    float integration_T;
-    float max_output = 1.0;
-    float sum_error = 0;
-    float output = 0;
-};
 
+private:
+	float error;
+	float Kp;
+	float Ti;
+	float integration_T;
+	float max_output = 1.0;
+	float sum_error = 0;
+	float output = 0;
+};
 
 // int round(int n)
 // {
 //     // Smaller multiple
 //     int a = (n / 10) * 10;
-     
+
 //     // Larger multiple
 //     int b = a + 10;
- 
+
 //     // Return of closest of two
 //     return (n - a > b - n)? b : a;
 // }
@@ -92,7 +92,6 @@ int main(int argc, char *argv[])
 	uint8_t msg_brightness[MSG_LEN];
 	uint8_t msg_motor[MSG_LEN];
 
-
 	// two arduinos controlled by this program
 	// get measurement from one and value to set on the other
 	// modbus message format
@@ -117,14 +116,13 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-
 	usleep(100000);
 
 	int k = 0;
-	
+	int every_n_samples = 10;
 
-	while(true)
-	{	
+	while (true)
+	{
 		msg_brightness[0] = 2;
 		msg_brightness[1] = 3;
 
@@ -145,8 +143,7 @@ int main(int argc, char *argv[])
 
 		usleep(100000);
 
-		// uint8_t receive_brightness[100];
-		// read the value from the first arduino
+		// read the value from arduino 1
 		if ((count = read(file, (void *)receive_brightness, 100)) < 0)
 		{
 			perror("Failed to read from the input\n");
@@ -158,25 +155,24 @@ int main(int argc, char *argv[])
 		}
 
 		brightness = (receive_brightness[3] << 8) | receive_brightness[4];
-		mean_brightness = mean_brightness + (brightness-mean_brightness)/20;  
-
-		
+		mean_brightness = mean_brightness + (brightness - mean_brightness) / 20;
 
 		control_signal = controller.update(reference_brightness, mean_brightness);
-		// prent = round(prent); //til að minnka flokt
-		// reference_speed = (prent * 2.0 / 7.0) + 100 + 140;
+
+		// control signal is scaled from [-140,140] to [5,140] (then +140)
+		// because for the brightness control it doesnt make sense to
+		// completely stop the disk or go in reverse
 		reference_speed = (control_signal * 0.482) + 72.5 + 140;
 
-		
-/* 		if  ((k%10) == 0)
+		if (k % every_n_samples == 0)
 		{
 			printf("prent: %d\n", control_signal);
-			printf("ref speed %d\n", reference_speed-140);
+			printf("ref speed %d\n", reference_speed - 140);
 			printf("Brightness: %d\n", mean_brightness);
 			printf("k: %d  \n", k);
-			k=0;
+			k = 0;
 		}
- */
+
 		msg_motor[0] = 1;
 		msg_motor[1] = 6;
 
@@ -188,6 +184,7 @@ int main(int argc, char *argv[])
 		msg_motor[4] = (register_value >> 8) & 0xFF;
 		msg_motor[5] = register_value & 0xFF;
 
+		// send reference speed to arduino 2
 		if ((count = write(file, msg_motor, MSG_LEN)) < 0)
 		{
 			perror("Failed to write to the output\n");
