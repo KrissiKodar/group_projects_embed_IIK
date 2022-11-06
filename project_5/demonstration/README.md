@@ -1,0 +1,3 @@
+# The demonstration
+
+This code is for the classroom demonstration. The brighness master file is the client. It uses two servers (Arduinos), one for taking the brightness measurements (measured from voltage divider of a resistor and a photoresistor) and another one that uses the motor driver code from project 3. The master code first sets the motor driver Arduino to operational mode (the PI-controller coefficients are already set in the preoperational mode), then in a loop it takes brighness measurements and inputs them into a PI-controller on the Pi. The PI controller outputs a reference speed which is then sent to the motor server. This way it tries to keep the moving average of the brighness level at the reference brightness level.
